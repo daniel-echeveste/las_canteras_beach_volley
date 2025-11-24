@@ -1,2 +1,17 @@
+# 1. Activar el Módulo de Reescribe de URLs
 RewriteEngine On
+
+# 2. Redirigir index.html -> /web/index.php
+# Si el usuario solicita EXPRESAMENTE el archivo index.html, lo reescribe internamente.
 RewriteRule ^index\.html$ /web/index.php [L]
+
+# 3. Redirigir Petición Raíz -> /web/index.php
+# Si el usuario solo escribe tudominio.com (petición a la raíz sin archivo), 
+# también debe ir a /web/index.php.
+RewriteRule ^$ /web/index.php [L]
+
+# Opcional: Si quieres forzar HTTPS y WWW (Recomendado para producción)
+# Si tu dominio ya usa HTTPS y prefieres www:
+# RewriteCond %{HTTPS} off [OR]
+# RewriteCond %{HTTP_HOST} !^www\. [NC]
+# RewriteRule (.*) https://www.tudominio.com/$1 [L,R=301]
