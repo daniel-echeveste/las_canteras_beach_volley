@@ -1,0 +1,1 @@
+import{j as r}from"./app-LdkVWVao.js";import{P as t}from"./shapes-BTzIkCZ6.js";import"./extends-CF3RwP-h.js";function n(a){return r.jsx(t,{args:[200,100],rotation:[-Math.PI/2,0,0],receiveShadow:!0,...a,children:r.jsx("meshStandardMaterial",{color:"#f2d2a9"})})}export{n as default};
