@@ -56,16 +56,6 @@ export default function Navbar() {
                     ))}
                 </ul>
 
-                {/* CTA Button */}
-                <div className="hidden xl:block">
-                    <a
-                        href="#contacto"
-                        className="bg-[#1CA9C9] hover:bg-[#1c8ea9] text-white px-5 py-2 rounded-xl shadow transition font-bold"
-                    >
-                        Únete
-                    </a>
-                </div>
-
                 {/* Mobile Menu Button */}
                 <button
                     className="xl:hidden text-gray-700 focus:outline-none"
@@ -103,15 +93,6 @@ export default function Navbar() {
                                 </Link>
                             </li>
                         ))}
-                        <li>
-                            <a
-                                href="#contacto"
-                                className="block text-center bg-[#1CA9C9] hover:bg-[#1c8ea9] text-white px-4 py-2 rounded-xl shadow transition"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                Únete
-                            </a>
-                        </li>
                     </ul>
                 </div>
             )}

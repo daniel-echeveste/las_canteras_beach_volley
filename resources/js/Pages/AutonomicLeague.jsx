@@ -6,8 +6,8 @@ import ScheduleTable from "@/Components/ScheduleTable";
 export default function AutonomicLeague() {
     const schedule = [
         // Jornada 1
-        { jornada: 1, fecha: "29/11/2025", hora: "", local: "ELITEFIT CANARIAS", visitante: "BRAVEHEART GC", cancha: "", resultado: "" },
-        { jornada: 1, fecha: "29/11/2025", hora: "", local: "NET 7 BLACKBOARD", visitante: "CANACANTE", cancha: "", resultado: "" },
+        { jornada: 1, fecha: "29/11/2025", hora: "", local: "ELITEFIT CANARIAS", visitante: "BRAVEHEART GC", cancha: "Canteras", resultado: "0-3" },
+        { jornada: 1, fecha: "29/11/2025", hora: "", local: "NET 7 BLACKBOARD", visitante: "CANACANTE", cancha: "Alcaravaneras", resultado: "1-2" },
         { jornada: 1, fecha: "29/11/2025", hora: "", local: "DESCANSA", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
         { jornada: 1, fecha: "29/11/2025", hora: "", local: "ICOREN", visitante: "OVERBLOCK MASPALOMAS", cancha: "", resultado: "" },
         // Jornada 2
