@@ -81,34 +81,45 @@ export default function AutonomicLeague() {
 
     const scheduleFemale = [
         // Jornada 1
-        { jornada: 1, fecha: "29/11/2025", hora: "", local: "DESCANSA", visitante: "BRAVEHEART GC", cancha: "", resultado: "" },
+        { jornada: 1, fecha: "29/11/2025", hora: "", local: "DESCANSA", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
         { jornada: 1, fecha: "29/11/2025", hora: "", local: "CD SIDEOUT", visitante: "ICOREN", cancha: "", resultado: "" },
+        { jornada: 1, fecha: "29/11/2025", hora: "", local: "BRAVEHEART GC", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "" },
         // Jornada 2
         { jornada: 2, fecha: "13/12/2025", hora: "", local: "DESCANSA", visitante: "BRAVEHEART GC", cancha: "", resultado: "" },
         { jornada: 2, fecha: "13/12/2025", hora: "", local: "VOLEY MAXORATA", visitante: "ICOREN", cancha: "", resultado: "" },
+        { jornada: 2, fecha: "13/12/2025", hora: "", local: "NET 7 BLACKBOARD", visitante: "CD SIDEOUT", cancha: "Alcaravaneras", resultado: "" },
         // Jornada 3
-        { jornada: 3, fecha: "27/12/2025", hora: "", local: "NET 7 BLACKBOARD", visitante: "CD SIDEOUT", cancha: "Alcaravaneras", resultado: "" },
+        { jornada: 3, fecha: "10/01/2026", hora: "", local: "NET 7 BLACKBOARD", visitante: "CD SIDEOUT", cancha: "", resultado: "" },
+        { jornada: 3, fecha: "10/01/2026", hora: "", local: "BRAVEHEART GC", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
+        { jornada: 3, fecha: "10/01/2026", hora: "", local: "CD SIDEOUT", visitante: "DESCANSA", cancha: "", resultado: "" },
         // Jornada 4
-        { jornada: 4, fecha: "10/01/2026", hora: "", local: "BRAVEHEART GC", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
-        { jornada: 4, fecha: "10/01/2026", hora: "", local: "CD SIDEOUT", visitante: "DESCANSA", cancha: "", resultado: "" },
+        { jornada: 4, fecha: "24/01/2026", hora: "", local: "BRAVEHEART GC", visitante: "CD SIDEOUT", cancha: "", resultado: "" },
+        { jornada: 4, fecha: "24/01/2026", hora: "", local: "NET 7 BLACKBOARD", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
+        { jornada: 4, fecha: "24/01/2026", hora: "", local: "DESCANSA", visitante: "ICOREN", cancha: "", resultado: "" },
         // Jornada 5
-        { jornada: 5, fecha: "10/01/2026", hora: "", local: "ICOREN", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "" },
+        { jornada: 5, fecha: "14/02/2026", hora: "", local: "VOLEY MAXORATA", visitante: "CD SIDEOUT", cancha: "", resultado: "" },
+        { jornada: 5, fecha: "14/02/2026", hora: "", local: "ICOREN", visitante: "BRAVEHEART GC", cancha: "", resultado: "" },
+        { jornada: 5, fecha: "14/02/2026", hora: "", local: "DESCANSA", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "" },
         // Jornada 6
-        { jornada: 6, fecha: "03/01/2026", hora: "", local: "BRAVEHEART GC", visitante: "CD SIDEOUT", cancha: "", resultado: "" },
-        { jornada: 6, fecha: "03/01/2026", hora: "", local: "DESCANSA", visitante: "ICOREN", cancha: "", resultado: "" },
+        { jornada: 6, fecha: "28/02/2026", hora: "", local: "VOLEY MAXORATA", visitante: "DESCANSA", cancha: "", resultado: "" },
+        { jornada: 6, fecha: "28/02/2026", hora: "", local: "ICOREN", visitante: "CD SIDEOUT", cancha: "", resultado: "" },
+        { jornada: 6, fecha: "28/02/2026", hora: "", local: "BRAVEHEART GC", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "" },
         // Jornada 7 (2ª Vuelta starts)
-        { jornada: 7, fecha: "10/01/2026", hora: "", local: "BRAVEHEART GC", visitante: "DESCANSA", cancha: "", resultado: "" },
-        { jornada: 7, fecha: "10/01/2026", hora: "", local: "ICOREN", visitante: "CD SIDEOUT", cancha: "", resultado: "" },
+        { jornada: 7, fecha: "07/03/2026", hora: "", local: "DESCANSA", visitante: "BRAVEHEART GC", cancha: "", resultado: "" },
+        { jornada: 7, fecha: "07/03/2026", hora: "", local: "ICOREN", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
+        { jornada: 7, fecha: "07/03/2026", hora: "", local: "CD SIDEOUT", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "" },
         // Jornada 8
-        { jornada: 8, fecha: "10/01/2026", hora: "", local: "BRAVEHEART GC", visitante: "DESCANSA", cancha: "", resultado: "" },
-        { jornada: 8, fecha: "10/01/2026", hora: "", local: "ICOREN", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
+        { jornada: 8, fecha: "21/03/2026", hora: "", local: "DESCANSA", visitante: "CD SIDEOUT", cancha: "", resultado: "" },
+        { jornada: 8, fecha: "21/03/2026", hora: "", local: "BRAVEHEART GC", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
+        { jornada: 8, fecha: "21/03/2026", hora: "", local: "NET 7 BLACKBOARD", visitante: "ICOREN", cancha: "", resultado: "" },
         // Jornada 9
-        { jornada: 9, fecha: "21/03/2026", hora: "", local: "NET 7 BLACKBOARD", visitante: "ICOREN", cancha: "", resultado: "" },
-        { jornada: 9, fecha: "21/03/2026", hora: "", local: "CD SIDEOUT", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "" },
+        { jornada: 9, fecha: "28/03/2026", hora: "", local: "DESCANSA", visitante: "ICOREN", cancha: "", resultado: "" },
+        { jornada: 9, fecha: "28/03/2026", hora: "", local: "CD SIDEOUT", visitante: "BRAVEHEART GC", cancha: "", resultado: "" },
+        { jornada: 9, fecha: "28/03/2026", hora: "", local: "VOLEY MAXORATA", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "" },
         // Jornada 10
-        { jornada: 10, fecha: "11/04/2026", hora: "", local: "VOLEY MAXORATA", visitante: "BRAVEHEART GC", cancha: "", resultado: "" },
-        { jornada: 10, fecha: "11/04/2026", hora: "", local: "DESCANSA", visitante: "CD SIDEOUT", cancha: "", resultado: "" },
-        { jornada: 10, fecha: "11/04/2026", hora: "", local: "ICOREN", visitante: "BRAVEHEART GC", cancha: "", resultado: "" },
+        { jornada: 10, fecha: "11/04/2026", hora: "", local: "DESCANSA", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "" },
+        { jornada: 10, fecha: "11/04/2026", hora: "", local: "BRAVEHEART GC", visitante: "ICOREN", cancha: "", resultado: "" },
+        { jornada: 10, fecha: "11/04/2026", hora: "", local: "VOLEY MAXORATA", visitante: "CD SIDEOUT", cancha: "", resultado: "" },
     ];
 
     const currentSchedule = isFemale ? scheduleFemale : scheduleMale;
