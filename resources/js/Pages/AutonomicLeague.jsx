@@ -9,7 +9,7 @@ export default function AutonomicLeague() {
         { jornada: 1, fecha: "29/11/2025", hora: "", local: "ELITEFIT CANARIAS", visitante: "BRAVEHEART GC", cancha: "Canteras", resultado: "0-3" },
         { jornada: 1, fecha: "29/11/2025", hora: "", local: "NET 7 BLACKBOARD", visitante: "CANACANTE", cancha: "Alcaravaneras", resultado: "1-2" },
         { jornada: 1, fecha: "29/11/2025", hora: "", local: "DESCANSA", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
-        { jornada: 1, fecha: "29/11/2025", hora: "", local: "ICOREN", visitante: "OVERBLOCK MASPALOMAS", cancha: "", resultado: "" },
+        { jornada: 1, fecha: "29/11/2025", hora: "", local: "ICOREN", visitante: "OVERBLOCK MASPALOMAS", cancha: "tenerife", resultado: "3-0" },
         // Jornada 2
         { jornada: 2, fecha: "13/12/2025", hora: "", local: "BRAVEHEART GC", visitante: "OVERBLOCK MASPALOMAS", cancha: "", resultado: "" },
         { jornada: 2, fecha: "13/12/2025", hora: "", local: "VOLEY MAXORATA", visitante: "ICOREN", cancha: "", resultado: "" },

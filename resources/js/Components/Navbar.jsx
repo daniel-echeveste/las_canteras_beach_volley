@@ -11,8 +11,6 @@ export default function Navbar() {
 
     const allNavLinks = [
         { name: "Inicio", href: "/", devOnly: true },
-        { name: "Actividades", href: "/#actividades", devOnly: true },
-        { name: "Comunidad", href: "/#comunidad", devOnly: true },
         { name: "Blog", href: "/blog", devOnly: true },
         { name: "Clubes", href: "/clubes-voleibol", devOnly: true },
         { name: "Liga", href: "/liga-autonomica", devOnly: false },
@@ -32,7 +30,7 @@ export default function Navbar() {
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-3">
                     <img
-                        src="/logo.jpg"
+                        src="/logo-nobg.png"
                         alt="Las Canteras Vóley"
                         className="h-12 w-12 object-contain rounded-full"
                         style={{ mixBlendMode: 'multiply' }}

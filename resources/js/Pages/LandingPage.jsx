@@ -27,17 +27,26 @@ export default function LandingPage({ appName, version }) {
                             Deporte, arena, comunidad y sol. Vive la experiencia del vóley playa en uno de los mejores rincones de Canarias.
                         </p>
 
-                        <a
-                            href="#actividades"
-                            className="mt-8 bg-[#FFD369] hover:bg-[#f0c45c] text-black font-semibold px-8 py-3 rounded-xl shadow-lg transition"
-                        >
-                            Descubrir Actividades
-                        </a>
+                        <div className="flex gap-4 mt-8">
+                            <a
+                                href="/liga-autonomica"
+                                className="mt-8 bg-[#FFD369] hover:bg-[#f0c45c] text-black font-semibold px-8 py-3 rounded-xl shadow-lg transition"
+                            >
+                                Liga Autonómica
+                            </a>
+                            <a
+                                href="/ranking"
+                                className="mt-8 bg-[#FFD369] hover:bg-[#f0c45c] text-black font-semibold px-8 py-3 rounded-xl shadow-lg transition"
+                            >
+                                Ranking Nacional
+                            </a>
+                        </div>
+
                     </div>
                 </section>
 
                 {/* ----- ACTIVIDADES ----- */}
-                <section id="actividades" className="py-24 bg-[#FFF2CC]">
+                {/* <section id="actividades" className="py-24 bg-[#FFF2CC]">
                     <div className="max-w-6xl mx-auto px-6">
                         <h2 className="text-4xl text-center font-extrabold text-[#1CA9C9]">
                             Actividades
@@ -76,10 +85,10 @@ export default function LandingPage({ appName, version }) {
                             ))}
                         </div>
                     </div>
-                </section>
+                </section> */}
 
                 {/* ----- COMUNIDAD ----- */}
-                <section id="comunidad" className="py-24 bg-[#FFF8E8]">
+                {/* <section id="comunidad" className="py-24 bg-[#FFF8E8]">
                     <div className="max-w-4xl mx-auto px-6 text-center">
                         <h2 className="text-4xl font-extrabold text-[#1CA9C9]">
                             Comunidad en la playa
@@ -90,21 +99,17 @@ export default function LandingPage({ appName, version }) {
                             y el deporte. ¡Ven a formar parte de esta familia!
                         </p>
                     </div>
-                </section>
+                </section> */}
 
                 {/* ----- FOOTER ----- */}
-                <footer id="contacto" className="bg-[#1CA9C9] text-white py-8 mt-10">
+                {/* <footer id="contacto" className="bg-[#1CA9C9] text-white py-2">
                     <div className="max-w-6xl mx-auto text-center px-6">
-                        <h3 className="text-2xl font-bold">Contáctanos</h3>
-                        <p className="mt-2">
-                            ¿Quieres unirte o pedir información? Escríbenos por redes o visítanos en Las Canteras.
-                        </p>
 
-                        <p className="mt-6 text-sm opacity-80">
+                        <p className="mt-2 text-sm opacity-80">
                             {appName} v{version} — Vóley Playa Las Canteras © {new Date().getFullYear()}
                         </p>
                     </div>
-                </footer>
+                </footer> */}
             </div>
         </>
     );
