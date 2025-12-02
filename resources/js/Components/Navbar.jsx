@@ -5,9 +5,13 @@ export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Check if we're in development (localhost or .test domain)
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasDevPermissions = urlParams.get('developer_permissions') === 'true';
+
     const isDevelopment = window.location.hostname === 'localhost' ||
         window.location.hostname.includes('.test') ||
-        window.location.hostname === '127.0.0.1';
+        window.location.hostname === '127.0.0.1' ||
+        hasDevPermissions;
 
     const allNavLinks = [
         { name: "Inicio", href: "/", devOnly: true },
