@@ -15,7 +15,7 @@ export default function Navbar() {
 
     const allNavLinks = [
         { name: "Inicio", href: "/", devOnly: true },
-        { name: "Blog", href: "/blog", devOnly: true },
+        { name: "Blog", href: "/blog", devOnly: false },
         { name: "Clubes", href: "/clubes-voleibol", devOnly: true },
         { name: "Liga", href: "/liga-autonomica", devOnly: false },
         { name: "Ranking", href: "/ranking", devOnly: false },
