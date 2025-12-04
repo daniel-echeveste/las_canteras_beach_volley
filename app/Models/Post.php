@@ -18,12 +18,15 @@ class Post extends Model
         'post_type',
         'event_date',
         'contact_email',
+        'email_subject',
+        'has_form',
         'form_fields',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'event_date' => 'datetime',
+        'has_form' => 'boolean',
         'form_fields' => 'array',
     ];
 

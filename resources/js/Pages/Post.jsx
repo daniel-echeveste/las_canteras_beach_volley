@@ -185,7 +185,7 @@ export default function Post({ post }) {
                             </div>
 
                             {/* Tournament Registration Form */}
-                            {post.post_type === 'torneo' && post.form_fields && post.form_fields.length > 0 && (
+                            {post.post_type === 'torneo' && post.has_form && post.form_fields && post.form_fields.length > 0 && (
                                 <div className="mt-8 border-t pt-8">
                                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Inscripción al Torneo</h2>
 

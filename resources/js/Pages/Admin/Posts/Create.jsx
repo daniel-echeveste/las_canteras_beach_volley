@@ -10,7 +10,9 @@ export default function Create({ auth }) {
         is_published: false,
         post_type: 'noticia',
         event_date: '',
+        has_form: true,
         contact_email: '',
+        email_subject: '',
         form_fields: [],
     });
 
@@ -144,114 +146,118 @@ export default function Create({ auth }) {
                                 {/* Tournament Fields - Only for torneos */}
                                 {data.post_type === 'torneo' && (
                                     <>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Email de Contacto</label>
+                                        <div className="flex items-center">
                                             <input
-                                                type="email"
-                                                value={data.contact_email}
-                                                onChange={e => setData('contact_email', e.target.value)}
-                                                placeholder="email@ejemplo.com"
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                type="checkbox"
+                                                id="has_form"
+                                                checked={data.has_form}
+                                                onChange={e => setData('has_form', e.target.checked)}
+                                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                             />
-                                            {errors.contact_email && <div className="text-red-500 text-sm mt-1">{errors.contact_email}</div>}
+                                            <label htmlFor="has_form" className="ml-2 block text-sm text-gray-900">
+                                                Habilitar Formulario de Inscripción
+                                            </label>
                                         </div>
 
-                                        <div className="border-t pt-4">
-                                            <h3 className="text-lg font-semibold mb-4">Campos del Formulario de Inscripción</h3>
+                                        {data.has_form && (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700">Email de Contacto</label>
+                                                    <input
+                                                        type="email"
+                                                        value={data.contact_email}
+                                                        onChange={e => setData('contact_email', e.target.value)}
+                                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    />
+                                                    {errors.contact_email && <div className="text-red-500 text-sm mt-1">{errors.contact_email}</div>}
+                                                </div>
 
-                                            {/* Existing Form Fields */}
-                                            {data.form_fields.length > 0 && (
-                                                <div className="mb-4 space-y-2">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700">Asunto del Email</label>
+                                                    <input
+                                                        type="text"
+                                                        value={data.email_subject}
+                                                        onChange={e => setData('email_subject', e.target.value)}
+                                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    />
+                                                    {errors.email_subject && <div className="text-red-500 text-sm mt-1">{errors.email_subject}</div>}
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Campos del Formulario</label>
+
+                                                    {/* Existing Fields */}
                                                     {data.form_fields.map((field, index) => (
-                                                        <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded">
-                                                            <div>
-                                                                <span className="font-medium">{field.label}</span>
-                                                                <span className="text-sm text-gray-500 ml-2">({field.type})</span>
-                                                                {field.required && <span className="text-red-500 ml-2">*</span>}
-                                                            </div>
+                                                        <div key={index} className="flex items-center gap-2 mb-2 p-2 bg-gray-50 rounded">
+                                                            <span className="flex-1">{field.label} ({field.type})</span>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeFormField(index)}
-                                                                className="text-red-600 hover:text-red-800"
+                                                                className="px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
                                                             >
                                                                 Eliminar
                                                             </button>
                                                         </div>
                                                     ))}
-                                                </div>
-                                            )}
 
-                                            {/* Add New Field */}
-                                            <div className="bg-blue-50 p-4 rounded space-y-3">
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700">Nombre del Campo</label>
-                                                        <input
-                                                            type="text"
-                                                            value={newField.name}
-                                                            onChange={e => setNewField({ ...newField, name: e.target.value })}
-                                                            placeholder="nombre_completo"
-                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700">Etiqueta</label>
-                                                        <input
-                                                            type="text"
-                                                            value={newField.label}
-                                                            onChange={e => setNewField({ ...newField, label: e.target.value })}
-                                                            placeholder="Nombre Completo"
-                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700">Tipo</label>
-                                                        <select
-                                                            value={newField.type}
-                                                            onChange={e => setNewField({ ...newField, type: e.target.value })}
-                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    {/* Add New Field */}
+                                                    <div className="mt-4 p-4 border border-gray-300 rounded space-y-3">
+                                                        <h4 className="font-medium text-sm">Añadir Campo</h4>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div>
+                                                                <label className="block text-xs text-gray-600">Nombre del Campo</label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={newField.name}
+                                                                    onChange={e => setNewField({ ...newField, name: e.target.value })}
+                                                                    className="mt-1 block w-full text-sm rounded-md border-gray-300"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs text-gray-600">Etiqueta</label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={newField.label}
+                                                                    onChange={e => setNewField({ ...newField, label: e.target.value })}
+                                                                    className="mt-1 block w-full text-sm rounded-md border-gray-300"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs text-gray-600">Tipo</label>
+                                                                <select
+                                                                    value={newField.type}
+                                                                    onChange={e => setNewField({ ...newField, type: e.target.value })}
+                                                                    className="mt-1 block w-full text-sm rounded-md border-gray-300"
+                                                                >
+                                                                    <option value="text">Texto</option>
+                                                                    <option value="email">Email</option>
+                                                                    <option value="tel">Teléfono</option>
+                                                                    <option value="textarea">Área de Texto</option>
+                                                                    <option value="select">Selección</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={newField.required}
+                                                                    onChange={e => setNewField({ ...newField, required: e.target.checked })}
+                                                                    className="h-4 w-4 text-indigo-600 rounded"
+                                                                />
+                                                                <label className="ml-2 text-xs text-gray-600">Requerido</label>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={addFormField}
+                                                            className="px-3 py-1 bg-indigo-500 text-white text-sm rounded hover:bg-indigo-600"
                                                         >
-                                                            <option value="text">Texto</option>
-                                                            <option value="email">Email</option>
-                                                            <option value="phone">Teléfono</option>
-                                                            <option value="textarea">Área de Texto</option>
-                                                            <option value="select">Selección</option>
-                                                        </select>
+                                                            Añadir Campo
+                                                        </button>
                                                     </div>
-                                                    <div className="flex items-end">
-                                                        <label className="flex items-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={newField.required}
-                                                                onChange={e => setNewField({ ...newField, required: e.target.checked })}
-                                                                className="mr-2"
-                                                            />
-                                                            Campo obligatorio
-                                                        </label>
-                                                    </div>
+                                                    {errors.form_fields && <div className="text-red-500 text-sm mt-1">{errors.form_fields}</div>}
                                                 </div>
-                                                {newField.type === 'select' && (
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700">Opciones (separadas por coma)</label>
-                                                        <input
-                                                            type="text"
-                                                            onChange={e => setNewField({ ...newField, options: e.target.value.split(',').map(o => o.trim()) })}
-                                                            placeholder="Opción 1, Opción 2, Opción 3"
-                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                        />
-                                                    </div>
-                                                )}
-                                                <button
-                                                    type="button"
-                                                    onClick={addFormField}
-                                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                                                >
-                                                    Añadir Campo
-                                                </button>
-                                            </div>
-                                        </div>
+                                            </>
+                                        )}
                                     </>
                                 )}
 
@@ -285,6 +291,6 @@ export default function Create({ auth }) {
                     </div>
                 </div>
             </div>
-        </AdminLayout>
+        </AdminLayout >
     );
 }

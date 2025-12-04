@@ -31,7 +31,7 @@ class TournamentRegistrationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nueva inscripción: ' . $this->post->title,
+            subject: $this->post->email_subject ?? ('Nueva inscripción: ' . $this->post->title),
         );
     }
 
