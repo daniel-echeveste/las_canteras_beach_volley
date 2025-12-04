@@ -31,19 +31,8 @@ Route::get('/liga-autonomica', function () {
     return Inertia::render('AutonomicLeague');
 })->name('autonomic.league');
 
-Route::get('/blog', function () {
-    $posts = \App\Models\Post::where('is_published', true)->latest()->get();
-    return Inertia::render('Blog', [
-        'posts' => $posts
-    ]);
-})->name('blog');
-
-Route::get('/blog/{slug}', function ($slug) {
-    $post = \App\Models\Post::where('slug', $slug)->where('is_published', true)->firstOrFail();
-    return Inertia::render('Post', [
-        'post' => $post
-    ]);
-})->name('blog.show');
+Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog');
+Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
 
 Route::post('/tournament-registration/{postId}', [TournamentRegistrationController::class, 'store'])->name('tournament.register');
 
