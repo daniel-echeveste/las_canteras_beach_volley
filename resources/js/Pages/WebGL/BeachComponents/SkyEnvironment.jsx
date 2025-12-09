@@ -14,16 +14,13 @@ export default function SkyEnvironment({ preset = "noon" }) {
         const azimuth = sunPos.azimuth;
         const altitude = sunPos.altitude;
 
-        // Convert to Cartesian (Y is up)
-        // altitude: 0 at horizon, PI/2 at zenith
-        // azimuth: 0 is South, increasing westward
-        const r = 100; // Distance
+        const r = 100;
         const y = r * Math.sin(altitude);
         const rPlane = r * Math.cos(altitude);
         const x = rPlane * Math.sin(azimuth);
         const z = rPlane * Math.cos(azimuth);
 
-        const isNight = altitude < -0.05; // Slightly below horizon
+        const isNight = altitude < -0.05;
 
         return {
             sunPosition: [x, y, z],
@@ -65,7 +62,7 @@ export default function SkyEnvironment({ preset = "noon" }) {
             ambientIntensity: 0.3,
         },
         midnight: {
-            sunPosition: [0, -10, 0], // Sun below horizon
+            sunPosition: [0, -10, 0],
             turbidity: 0.1,
             rayleigh: 0.5,
             mieCoefficient: 0.005,
@@ -97,16 +94,43 @@ export default function SkyEnvironment({ preset = "noon" }) {
                     speed={1}
                 />
             )}
-            <ambientLight intensity={config.ambientIntensity} />
+
+            {/* Hemisphere light for natural ambient lighting */}
+            <hemisphereLight
+                args={['#87ceeb', '#f4e99b', 0.6]}
+                position={[0, 50, 0]}
+            />
+
+            {/* Main ambient light */}
+            <ambientLight intensity={config.ambientIntensity * 0.6} />
+
+            {/* Main directional (sun) light */}
             <directionalLight
                 position={config.sunPosition}
-                intensity={config.stars ? 0.2 : 1.5}
+                intensity={config.stars ? 0.2 : 1.8}
                 castShadow
-                shadow-mapSize={[2048, 2048]}
-                shadow-camera-left={-50}
-                shadow-camera-right={50}
-                shadow-camera-top={50}
-                shadow-camera-bottom={-50}
+                shadow-mapSize={[4096, 4096]}
+                shadow-camera-left={-80}
+                shadow-camera-right={80}
+                shadow-camera-top={80}
+                shadow-camera-bottom={-80}
+                shadow-camera-near={0.1}
+                shadow-camera-far={300}
+                shadow-bias={-0.0001}
+            />
+
+            {/* Fill light from opposite side */}
+            <directionalLight
+                position={[-config.sunPosition[0] * 0.5, config.sunPosition[1] * 0.3, -config.sunPosition[2] * 0.5]}
+                intensity={config.stars ? 0.05 : 0.4}
+                color="#ffe4c4"
+            />
+
+            {/* Rim light for dramatic effect */}
+            <directionalLight
+                position={[0, 20, -100]}
+                intensity={config.stars ? 0.1 : 0.3}
+                color="#ffd700"
             />
         </>
     );

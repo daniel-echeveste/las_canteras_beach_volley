@@ -5,40 +5,10 @@ import Navbar from "@/Components/Navbar";
 export default function WebGLIndex() {
     const experiences = [
         {
-            title: "Exp 1: El Balón",
-            description: "Interactúa con un balón de vóley realista flotando sobre la playa.",
-            href: "/webgl/exp1",
-            color: "bg-blue-500",
-        },
-        {
-            title: "Exp 2: Arenas Doradas",
-            description: "Siente la textura de Las Canteras con un sistema de partículas.",
-            href: "/webgl/exp2",
-            color: "bg-yellow-500",
-        },
-        {
-            title: "Exp 3: Océano",
-            description: "Relájate con una simulación del mar al atardecer.",
-            href: "/webgl/exp3",
-            color: "bg-indigo-500",
-        },
-        {
-            title: "Exp 4: La Cancha",
-            description: "Explora las zonas de juego en una cancha 3D interactiva.",
-            href: "/webgl/exp4",
-            color: "bg-orange-500",
-        },
-        {
-            title: "Exp 5: Energía",
-            description: "Visualización abstracta de la energía del deporte.",
-            href: "/webgl/exp5",
-            color: "bg-pink-500",
-        },
-        {
-            title: "Exp 6: Torneo Playa",
-            description: "8 canchas con partidos simultáneos en la playa.",
+            title: "Torneo Playa",
+            description: "8 canchas de vóley playa con partidos simultáneos, jugadores animados y un entorno realista con mar y arena.",
             href: "/webgl/exp6",
-            color: "bg-teal-500",
+            color: "bg-gradient-to-br from-teal-400 to-cyan-600",
         },
     ];
 

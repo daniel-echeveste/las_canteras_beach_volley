@@ -52,29 +52,13 @@ Route::get('/webgl', function () {
     return Inertia::render('WebGL/WebGLIndex');
 })->name('webgl.index');
 
-Route::get('/webgl/exp1', function () {
-    return Inertia::render('WebGL/Exp1_FloatingBall/Exp1');
-})->name('webgl.exp1');
+
 
 Route::get('/webcams', function () {
     return Inertia::render('WebCams');
 })->name('webcams');
 
-Route::get('/webgl/exp2', function () {
-    return Inertia::render('WebGL/Exp2_GoldenSands/Exp2');
-})->name('webgl.exp2');
 
-Route::get('/webgl/exp3', function () {
-    return Inertia::render('WebGL/Exp3_OceanSunset/Exp3');
-})->name('webgl.exp3');
-
-Route::get('/webgl/exp4', function () {
-    return Inertia::render('WebGL/Exp4_InteractiveCourt/Exp4');
-})->name('webgl.exp4');
-
-Route::get('/webgl/exp5', function () {
-    return Inertia::render('WebGL/Exp5_AbstractEnergy/Exp5');
-})->name('webgl.exp5');
 
 Route::get('/webgl/exp6', function () {
     return Inertia::render('WebGL/Exp6_BeachVolley/Exp6');

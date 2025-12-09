@@ -5,7 +5,7 @@ import * as THREE from "three";
 import vertexShader from "./shaders/sand/vertex.glsl";
 import fragmentShader from "./shaders/sand/fragment.glsl";
 
-export default function Sand(props) {
+export default function Sand({ sunPosition = [50, 100, 50], ...props }) {
     const ref = useRef();
 
     useFrame((state, delta) => {
@@ -17,7 +17,7 @@ export default function Sand(props) {
     return (
         <Plane
             ref={ref}
-            args={[200, 100, 64, 64]}
+            args={[200, 100, 128, 128]}
             rotation={[-Math.PI / 2, 0, 0]}
             receiveShadow
             {...props}
@@ -25,7 +25,8 @@ export default function Sand(props) {
             <shaderMaterial
                 uniforms={{
                     uTime: { value: 0 },
-                    uColor: { value: new THREE.Color("#f2d2a9") }
+                    uColor: { value: new THREE.Color("#f2d2a9") },
+                    uSunPosition: { value: new THREE.Vector3(...sunPosition) }
                 }}
                 vertexShader={vertexShader}
                 fragmentShader={fragmentShader}

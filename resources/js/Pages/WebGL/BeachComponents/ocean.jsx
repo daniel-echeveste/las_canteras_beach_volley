@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import vertexShader from "./shaders/ocean/vertex.glsl";
 import fragmentShader from "./shaders/ocean/fragment.glsl";
@@ -10,6 +10,7 @@ export default function Ocean({
   args = [100, 100, 64, 64],
   color1 = "#0080cc", // Default blue
   color2 = "#003380", // Default darker blue
+  sunPosition = [50, 100, 50],
   ...props
 }) {
   const ref = useRef();
@@ -20,11 +21,10 @@ export default function Ocean({
     }
   });
 
-
-
   // Helper to convert hex to THREE.Color
   const c1 = new THREE.Color(color1);
   const c2 = new THREE.Color(color2);
+  const sunPos = new THREE.Vector3(...sunPosition);
 
   return (
     <mesh ref={ref} rotation={rotation} position={position} {...props}>
@@ -33,7 +33,8 @@ export default function Ocean({
         uniforms={{
           uTime: { value: 0 },
           uColor1: { value: c1 },
-          uColor2: { value: c2 }
+          uColor2: { value: c2 },
+          uSunPosition: { value: sunPos }
         }}
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
