@@ -8,7 +8,8 @@
         <title inertia>{{ config('app.name', 'Las Canteras Beach Volley') }}</title>
 
         <!-- Favicon -->
-        <link rel="icon" type="image/png" href="/logo-nobg.png">
+        <link rel="icon" href="/logo.png">
+        <link rel="shortcut icon" href="/logo.png">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
