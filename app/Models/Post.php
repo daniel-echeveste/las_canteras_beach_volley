@@ -14,6 +14,7 @@ class Post extends Model
         'slug',
         'content',
         'image_path',
+        'youtube_url',
         'is_published',
         'post_type',
         'event_date',

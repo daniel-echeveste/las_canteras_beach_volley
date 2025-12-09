@@ -7,11 +7,12 @@ export default function Create({ auth }) {
         title: '',
         content: '',
         image: null,
+        youtube_url: '',
         is_published: false,
         post_type: 'noticia',
         event_date: '',
         tournament_date: '',
-        has_form: true,
+        has_form: false,
         contact_email: '',
         email_subject: '',
         form_fields: [],
@@ -128,6 +129,19 @@ export default function Create({ auth }) {
                                         className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                                     />
                                     {errors.image && <div className="text-red-500 text-sm mt-1">{errors.image}</div>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">URL de YouTube (Opcional)</label>
+                                    <input
+                                        type="url"
+                                        value={data.youtube_url}
+                                        onChange={e => setData('youtube_url', e.target.value)}
+                                        placeholder="https://www.youtube.com/watch?v=..."
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    />
+                                    <p className="mt-1 text-sm text-gray-500">Si se proporciona, el video reemplazará a la imagen en la cabecera del post.</p>
+                                    {errors.youtube_url && <div className="text-red-500 text-sm mt-1">{errors.youtube_url}</div>}
                                 </div>
 
                                 {/* Event Date - Only for eventos */}

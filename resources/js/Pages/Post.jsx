@@ -8,6 +8,27 @@ export default function Post({ post }) {
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
 
+    // Helper function to extract YouTube video ID from various URL formats
+    const getYouTubeVideoId = (url) => {
+        if (!url) return null;
+        try {
+            // Handle youtu.be short URLs
+            if (url.includes('youtu.be/')) {
+                return url.split('youtu.be/')[1]?.split(/[?&#]/)[0];
+            }
+            // Handle youtube.com/embed/ URLs
+            if (url.includes('/embed/')) {
+                return url.split('/embed/')[1]?.split(/[?&#]/)[0];
+            }
+            // Handle youtube.com/watch?v= URLs
+            const urlObj = new URL(url);
+            return urlObj.searchParams.get('v');
+        } catch (e) {
+            console.error('Error parsing YouTube URL:', e);
+            return null;
+        }
+    };
+
     const handleFormChange = (fieldName, value) => {
         setFormData(prev => ({
             ...prev,
@@ -132,7 +153,19 @@ export default function Post({ post }) {
                             </span>
                         </div>
 
-                        {post.image_path && (
+                        {post.youtube_url && getYouTubeVideoId(post.youtube_url) ? (
+                            <div className="w-full h-96 bg-black">
+                                <iframe
+                                    width="100%"
+                                    height="100%"
+                                    src={`https://www.youtube.com/embed/${getYouTubeVideoId(post.youtube_url)}`}
+                                    title={post.title}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            </div>
+                        ) : post.image_path && (
                             <img
                                 src={`/storage/${post.image_path}`}
                                 alt={post.title}
