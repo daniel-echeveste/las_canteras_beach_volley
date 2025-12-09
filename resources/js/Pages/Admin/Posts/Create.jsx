@@ -10,6 +10,7 @@ export default function Create({ auth }) {
         is_published: false,
         post_type: 'noticia',
         event_date: '',
+        tournament_date: '',
         has_form: true,
         contact_email: '',
         email_subject: '',
@@ -146,6 +147,18 @@ export default function Create({ auth }) {
                                 {/* Tournament Fields - Only for torneos */}
                                 {data.post_type === 'torneo' && (
                                     <>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Fecha del Torneo</label>
+                                            <input
+                                                type="datetime-local"
+                                                value={data.tournament_date}
+                                                onChange={e => setData('tournament_date', e.target.value)}
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            />
+                                            <p className="mt-1 text-sm text-gray-500">Después de esta fecha, las inscripciones se cerrarán automáticamente.</p>
+                                            {errors.tournament_date && <div className="text-red-500 text-sm mt-1">{errors.tournament_date}</div>}
+                                        </div>
+
                                         <div className="flex items-center">
                                             <input
                                                 type="checkbox"

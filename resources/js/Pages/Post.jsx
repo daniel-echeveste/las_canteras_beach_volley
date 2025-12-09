@@ -184,52 +184,92 @@ export default function Post({ post }) {
                                 {post.content}
                             </div>
 
-                            {/* Tournament Registration Form */}
-                            {post.post_type === 'torneo' && post.has_form && post.form_fields && post.form_fields.length > 0 && (
-                                <div className="mt-8 border-t pt-8">
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Inscripción al Torneo</h2>
-
-                                    {submitted ? (
-                                        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-                                            <div className="flex items-center">
-                                                <svg className="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                <div>
-                                                    <p className="font-semibold text-green-800">¡Inscripción enviada correctamente!</p>
-                                                    <p className="text-sm text-green-700">Recibirás una confirmación en tu email.</p>
-                                                </div>
+                            {/* Tournament Date - Only for torneos */}
+                            {post.post_type === 'torneo' && post.tournament_date && (
+                                <div className="mb-6 p-4 bg-orange-50 border-l-4 border-orange-500 rounded">
+                                    <div className="flex items-center">
+                                        <svg className="w-6 h-6 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <div>
+                                            <div className="text-sm font-semibold text-orange-800">Fecha del Torneo</div>
+                                            <div className="text-lg font-bold text-orange-900">
+                                                {new Date(post.tournament_date).toLocaleDateString('es-ES', {
+                                                    weekday: 'long',
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
                                             </div>
                                         </div>
-                                    ) : (
-                                        <form onSubmit={handleTournamentSubmit} className="space-y-4">
-                                            {post.form_fields.map((field, index) => (
-                                                <div key={index}>
-                                                    <label className="block text-sm font-medium text-gray-700">
-                                                        {field.label}
-                                                        {field.required && <span className="text-red-500 ml-1">*</span>}
-                                                    </label>
-                                                    {renderFormField(field)}
-                                                </div>
-                                            ))}
-
-                                            {error && (
-                                                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                                                    <p className="text-red-800">{error}</p>
-                                                </div>
-                                            )}
-
-                                            <button
-                                                type="submit"
-                                                disabled={submitting}
-                                                className="w-full px-6 py-3 bg-[#1CA9C9] text-white rounded-lg font-semibold hover:bg-[#158BA8] transition-colors duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {submitting ? 'Enviando...' : 'Enviar Inscripción'}
-                                            </button>
-                                        </form>
-                                    )}
+                                    </div>
                                 </div>
                             )}
+
+                            {/* Tournament Registration Form */}
+                            {post.post_type === 'torneo' && post.has_form && post.form_fields && post.form_fields.length > 0 && (() => {
+                                const isTournamentPast = post.tournament_date && new Date(post.tournament_date) < new Date();
+
+                                return (
+                                    <div className="mt-8 border-t pt-8">
+                                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Inscripción al Torneo</h2>
+
+                                        {isTournamentPast ? (
+                                            <div className="bg-gray-100 border-l-4 border-gray-400 p-6 rounded">
+                                                <div className="flex items-center">
+                                                    <svg className="w-8 h-8 text-gray-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                    </svg>
+                                                    <div>
+                                                        <p className="font-bold text-gray-700 text-lg">Inscripciones cerradas</p>
+                                                        <p className="text-gray-600">El plazo para inscribirse a este torneo ha finalizado.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : submitted ? (
+                                            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                                                <div className="flex items-center">
+                                                    <svg className="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <div>
+                                                        <p className="font-semibold text-green-800">¡Inscripción enviada correctamente!</p>
+                                                        <p className="text-sm text-green-700">Recibirás una confirmación en tu email.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <form onSubmit={handleTournamentSubmit} className="space-y-4">
+                                                {post.form_fields.map((field, index) => (
+                                                    <div key={index}>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            {field.label}
+                                                            {field.required && <span className="text-red-500 ml-1">*</span>}
+                                                        </label>
+                                                        {renderFormField(field)}
+                                                    </div>
+                                                ))}
+
+                                                {error && (
+                                                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                                                        <p className="text-red-800">{error}</p>
+                                                    </div>
+                                                )}
+
+                                                <button
+                                                    type="submit"
+                                                    disabled={submitting}
+                                                    className="w-full px-6 py-3 bg-[#1CA9C9] text-white rounded-lg font-semibold hover:bg-[#158BA8] transition-colors duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {submitting ? 'Enviando...' : 'Enviar Inscripción'}
+                                                </button>
+                                            </form>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </article>
 

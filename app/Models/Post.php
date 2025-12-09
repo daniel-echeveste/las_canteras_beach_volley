@@ -17,6 +17,7 @@ class Post extends Model
         'is_published',
         'post_type',
         'event_date',
+        'tournament_date',
         'contact_email',
         'email_subject',
         'has_form',
@@ -26,6 +27,7 @@ class Post extends Model
     protected $casts = [
         'is_published' => 'boolean',
         'event_date' => 'datetime',
+        'tournament_date' => 'datetime',
         'has_form' => 'boolean',
         'form_fields' => 'array',
     ];
