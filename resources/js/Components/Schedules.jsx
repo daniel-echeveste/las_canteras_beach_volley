@@ -77,7 +77,7 @@ export default function Schedule() {
         // Jornada 1
         { jornada: 1, fecha: "29/11/2025", hora: "", local: "DESCANSA", visitante: "VOLEY MAXORATA", cancha: "", resultado: "" },
         { jornada: 1, fecha: "29/11/2025", hora: "", local: "CD SIDEOUT", visitante: "ICOREN", cancha: "", resultado: "3-0" },
-        { jornada: 1, fecha: "29/11/2025", hora: "", local: "BRAVEHEART GC", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "3-0" },
+        { jornada: 1, fecha: "29/11/2025", hora: "", local: "BRAVEHEART GC", visitante: "NET 7 BLACKBOARD", cancha: "", resultado: "2-1" },
         // Jornada 2
         { jornada: 2, fecha: "13/12/2025", hora: "", local: "DESCANSA", visitante: "BRAVEHEART GC", cancha: "", resultado: "" },
         { jornada: 2, fecha: "13/12/2025", hora: "", local: "VOLEY MAXORATA", visitante: "ICOREN", cancha: "", resultado: "" },
