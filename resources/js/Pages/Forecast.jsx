@@ -210,8 +210,8 @@ export default function Forecast() {
                                         {displayData.windDir !== null && (
                                             <div
                                                 className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center"
-                                                style={{ transform: `rotate(${displayData.windDir}deg)` }}
-                                                title={`Dirección: ${displayData.windDir}°`}
+                                                style={{ transform: `rotate(${displayData.windDir - 180}deg)` }}
+                                                title={`Dirección: ${displayData.windDir - 180}°`}
                                             >
                                                 <svg className="w-4 h-4 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
@@ -278,8 +278,8 @@ export default function Forecast() {
                                                     setSelectedHour(null); // Reset hour when day changes
                                                 }}
                                                 className={`flex-shrink-0 snap-start flex flex-col items-center p-3 rounded-2xl border min-w-[90px] transition-all duration-200 ${isSelected
-                                                        ? 'border-[#1CA9C9] bg-[#1CA9C9] text-white shadow-md transform scale-105'
-                                                        : 'border-gray-200 bg-white text-gray-600 hover:border-[#1CA9C9]/50 hover:bg-gray-50'
+                                                    ? 'border-[#1CA9C9] bg-[#1CA9C9] text-white shadow-md transform scale-105'
+                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-[#1CA9C9]/50 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 <span className={`text-xs font-medium mb-1 ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
@@ -332,10 +332,10 @@ export default function Forecast() {
                                                 key={time}
                                                 onClick={() => setSelectedHour(time)}
                                                 className={`flex-shrink-0 snap-start flex flex-col items-center p-3 rounded-xl border min-w-[80px] transition-all ${isSelected
-                                                        ? 'border-[#1CA9C9] bg-[#1CA9C9]/10 ring-2 ring-[#1CA9C9]'
-                                                        : isNow
-                                                            ? 'border-gray-300 bg-gray-100'
-                                                            : 'border-gray-100 bg-white hover:border-gray-300'
+                                                    ? 'border-[#1CA9C9] bg-[#1CA9C9]/10 ring-2 ring-[#1CA9C9]'
+                                                    : isNow
+                                                        ? 'border-gray-300 bg-gray-100'
+                                                        : 'border-gray-100 bg-white hover:border-gray-300'
                                                     }`}
                                             >
                                                 <span className="text-xs font-medium text-gray-500 mb-1">
