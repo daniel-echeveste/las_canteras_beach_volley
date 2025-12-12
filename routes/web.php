@@ -19,11 +19,13 @@ use App\Http\Controllers\TournamentRegistrationController;
 */
 
 Route::get('/', function () {
+    $latestPosts = \App\Models\Post::where('is_published', true)
+        ->latest()
+        ->take(3)
+        ->get();
+
     return Inertia::render('LandingPage', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+        'latestPosts' => $latestPosts,
     ]);
 });
 

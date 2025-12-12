@@ -4,8 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="description" content="Vive la experiencia del vóley playa en Las Canteras. Entrenamientos, comunidad, deporte y sol en uno de los mejores rincones de Canarias.">
 
-        <title inertia>Las Canteras Beach Volley</title>
+        <title >Las Canteras Beach Volley</title>
 
         <!-- Favicon -->
         <link rel="icon" href="/logo.png">
