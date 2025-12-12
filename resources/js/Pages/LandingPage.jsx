@@ -191,7 +191,7 @@ export default function LandingPage({ latestPosts = [] }) {
                     <div className="relative z-10 flex flex-col justify-center items-center min-h-screen text-center text-white px-6 pt-20">
                         {/* Logo badge */}
                         <div className="mb-8 animate-fade-in">
-                            <div className="bg-white/10 backdrop-blur-md rounded-full p-4 inline-block">
+                            <div className="bg-white/10 backdrop-blur-md rounded-full p-4 hidden lg:inline-block">
                                 <img
                                     src="/logo-nobg.png"
                                     alt="Las Canteras Vóley"
