@@ -2,6 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Head, Link } from "@inertiajs/react";
 import Navbar from "@/Components/Navbar";
 
+// Helper function to strip HTML tags for preview
+const stripHtml = (html) => {
+    if (!html) return '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+};
 // Animated counter component
 function AnimatedCounter({ target, duration = 2000, suffix = "" }) {
     const [count, setCount] = useState(0);
@@ -101,7 +107,7 @@ function PostCard({ post }) {
                     {post.title}
                 </h3>
                 <p className="text-gray-600 text-sm line-clamp-2">
-                    {post.content}
+                    {stripHtml(post.content)}
                 </p>
             </div>
         </Link>
