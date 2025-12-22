@@ -1,6 +1,7 @@
 import React from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import Navbar from "@/Components/Navbar";
+import AdUnit from "@/Components/AdUnit";
 
 // Helper function to strip HTML tags for preview
 const stripHtml = (html) => {
@@ -10,6 +11,8 @@ const stripHtml = (html) => {
 };
 
 export default function Blog({ posts, filters }) {
+
+
     const currentFilter = filters?.type || 'all';
 
     const handleFilter = (type) => {
@@ -47,6 +50,7 @@ export default function Blog({ posts, filters }) {
 
     return (
         <>
+
             <Head title="Blog - Las Canteras Vóley" />
             <div className="min-h-screen bg-[#FFF8E8] text-gray-900 font-sans">
                 <Navbar />
@@ -100,44 +104,55 @@ export default function Blog({ posts, filters }) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {Array.isArray(posts) && posts.map((post) => (
-                            <div key={post.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
-                                {post.image_path && (
-                                    <div className="relative">
-                                        <img
-                                            src={`/storage/${post.image_path}`}
-                                            alt={post.title}
-                                            className="w-full h-48 object-cover"
-                                        />
-                                        <div className={`absolute top-4 right-4 p-2 rounded-full shadow-md ${post.post_type === 'noticia' ? 'bg-blue-100 text-blue-600' :
-                                            post.post_type === 'evento' ? 'bg-purple-100 text-purple-600' :
-                                                'bg-orange-100 text-orange-600'
-                                            }`}>
-                                            {getIcon(post.post_type)}
+                        {Array.isArray(posts) && posts.map((post, index) => (
+                            <React.Fragment key={post.id}>
+                                <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
+                                    {post.image_path && (
+                                        <div className="relative">
+                                            <img
+                                                src={`/storage/${post.image_path}`}
+                                                alt={post.title}
+                                                className="w-full h-48 object-cover"
+                                            />
+                                            <div className={`absolute top-4 right-4 p-2 rounded-full shadow-md ${post.post_type === 'noticia' ? 'bg-blue-100 text-blue-600' :
+                                                post.post_type === 'evento' ? 'bg-purple-100 text-purple-600' :
+                                                    'bg-orange-100 text-orange-600'
+                                                }`}>
+                                                {getIcon(post.post_type)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="p-6 flex-1 flex flex-col">
+                                        <div className="text-sm text-gray-500 mb-2">
+                                            {new Date(post.created_at).toLocaleDateString()}
+                                        </div>
+                                        <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                                            {post.title}
+                                        </h2>
+                                        <p className="text-gray-600 mb-4 line-clamp-3 flex-1">
+                                            {stripHtml(post.content)}
+                                        </p>
+                                        <Link
+                                            href={`/blog/${post.slug}`}
+                                            className="text-[#1CA9C9] font-semibold hover:text-[#158BA8] transition-colors mt-auto inline-flex items-center"
+                                        >
+                                            Leer más
+                                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </Link>
+                                    </div>
+                                </div>
+                                {/* Insert ad after every 3rd post */}
+                                {(index + 1) % 3 === 0 && index < posts.length - 1 && (
+                                    <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
+                                        <div className="p-6 flex-1 flex flex-col items-center justify-center min-h-[200px]">
+                                            <div className="text-xs text-gray-400 mb-2">Publicidad</div>
+                                            <AdUnit format="auto" slot="9802327573" />
                                         </div>
                                     </div>
                                 )}
-                                <div className="p-6 flex-1 flex flex-col">
-                                    <div className="text-sm text-gray-500 mb-2">
-                                        {new Date(post.created_at).toLocaleDateString()}
-                                    </div>
-                                    <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                                        {post.title}
-                                    </h2>
-                                    <p className="text-gray-600 mb-4 line-clamp-3 flex-1">
-                                        {stripHtml(post.content)}
-                                    </p>
-                                    <Link
-                                        href={`/blog/${post.slug}`}
-                                        className="text-[#1CA9C9] font-semibold hover:text-[#158BA8] transition-colors mt-auto inline-flex items-center"
-                                    >
-                                        Leer más
-                                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </Link>
-                                </div>
-                            </div>
+                            </React.Fragment>
                         ))}
                     </div>
 
