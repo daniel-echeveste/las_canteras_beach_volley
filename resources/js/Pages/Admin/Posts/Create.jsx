@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
+import RichTextEditor from '@/Components/RichTextEditor';
 
 export default function Create({ auth }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -112,12 +113,11 @@ export default function Create({ auth }) {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Contenido</label>
-                                    <textarea
+                                    <RichTextEditor
                                         value={data.content}
-                                        onChange={e => setData('content', e.target.value)}
-                                        rows="10"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    ></textarea>
+                                        onChange={(value) => setData('content', value)}
+                                        placeholder="Escribe el contenido del post..."
+                                    />
                                     {errors.content && <div className="text-red-500 text-sm mt-1">{errors.content}</div>}
                                 </div>
 

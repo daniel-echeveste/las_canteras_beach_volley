@@ -213,9 +213,20 @@ export default function Post({ post }) {
                             </h1>
 
                             {/* Content */}
-                            <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap mb-8">
-                                {post.content}
-                            </div>
+                            <div
+                                className="post-content prose prose-lg max-w-none text-gray-700 leading-relaxed mb-8"
+                                dangerouslySetInnerHTML={{ __html: post.content }}
+                            />
+                            <style>{`
+                                .post-content a {
+                                    color: #18a9cd;
+                                    
+                                }
+                                .post-content a:hover {
+                                    color: #158BA8;
+                                    text-decoration: underline;
+                                }
+                            `}</style>
 
                             {/* Tournament Date - Only for torneos */}
                             {post.post_type === 'torneo' && post.tournament_date && (

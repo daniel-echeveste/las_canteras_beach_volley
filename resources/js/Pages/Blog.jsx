@@ -2,6 +2,13 @@ import React from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import Navbar from "@/Components/Navbar";
 
+// Helper function to strip HTML tags for preview
+const stripHtml = (html) => {
+    if (!html) return '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+};
+
 export default function Blog({ posts, filters }) {
     const currentFilter = filters?.type || 'all';
 
@@ -118,7 +125,7 @@ export default function Blog({ posts, filters }) {
                                         {post.title}
                                     </h2>
                                     <p className="text-gray-600 mb-4 line-clamp-3 flex-1">
-                                        {post.content}
+                                        {stripHtml(post.content)}
                                     </p>
                                     <Link
                                         href={`/blog/${post.slug}`}
