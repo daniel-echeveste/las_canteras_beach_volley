@@ -26,14 +26,13 @@ export default function AdUnit({ format = 'auto', slot = '' }) {
     }, []);
 
     return (
-        <div ref={adRef} className="ad-container w-full">
+        <div ref={adRef} className="ad-container w-full" style={{ maxHeight: '300px' }}>
             <ins
                 className="adsbygoogle"
-                style={{ display: 'block', minWidth: '250px', minHeight: '100px', width: '100%' }}
+                style={{ display: 'block', width: '100%', height: '280px' }}
                 data-ad-client="ca-pub-4538032873726641"
                 data-ad-slot={slot}
-                data-ad-format={format}
-                data-full-width-responsive="true"
+                data-ad-format="rectangle"
             />
         </div>
     );
