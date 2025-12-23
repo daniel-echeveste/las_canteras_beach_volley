@@ -10,7 +10,7 @@ const stripHtml = (html) => {
     return doc.body.textContent || '';
 };
 
-export default function Blog({ posts, filters }) {
+export default function Blog({ posts, filters, adSettings }) {
 
 
     const currentFilter = filters?.type || 'all';
@@ -47,6 +47,9 @@ export default function Blog({ posts, filters }) {
                 return null;
         }
     };
+
+    const showAds = adSettings?.show_ads === '1';
+    const adFrequency = adSettings?.ad_frequency || 3;
 
     return (
         <>
@@ -143,12 +146,16 @@ export default function Blog({ posts, filters }) {
                                         </Link>
                                     </div>
                                 </div>
-                                {/* Insert ad after every 3rd post */}
-                                {(index + 1) % 3 === 0 && index < posts.length - 1 && (
+                                {/* Insert ad based on settings */}
+                                {showAds && (index + 1) % adFrequency === 0 && index < posts.length - 1 && (
                                     <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
                                         <div className="p-6 flex-1 flex flex-col items-center justify-center min-h-[200px]">
                                             <div className="text-xs text-gray-400 mb-2">Publicidad</div>
-                                            <AdUnit format="auto" slot="9802327573" />
+                                            <AdUnit
+                                                format="rectangle"
+                                                slot={adSettings?.ad_slot || '8111656162'}
+                                                client={adSettings?.ad_client_id || 'ca-pub-4538032873726641'}
+                                            />
                                         </div>
                                     </div>
                                 )}

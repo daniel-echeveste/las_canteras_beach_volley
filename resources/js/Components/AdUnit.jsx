@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function AdUnit({ format = 'auto', slot = '' }) {
+export default function AdUnit({ format = 'auto', slot = '', client = 'ca-pub-4538032873726641' }) {
     const adRef = useRef(null);
     const isAdLoaded = useRef(false);
 
@@ -30,7 +30,7 @@ export default function AdUnit({ format = 'auto', slot = '' }) {
             <ins
                 className="adsbygoogle"
                 style={{ display: 'block', width: '100%', height: '280px' }}
-                data-ad-client="ca-pub-4538032873726641"
+                data-ad-client={client}
                 data-ad-slot={slot}
                 data-ad-format="rectangle"
             />

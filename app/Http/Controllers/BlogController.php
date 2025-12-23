@@ -18,9 +18,18 @@ class BlogController extends Controller
 
         $posts = $query->get();
 
+        $adSettings = \App\Models\Setting::whereIn('key', ['show_ads', 'ad_frequency', 'ad_slot', 'ad_client_id'])
+            ->pluck('value', 'key');
+
         return Inertia::render('Blog', [
             'posts' => $posts,
             'filters' => $request->only(['type']),
+            'adSettings' => [
+                'show_ads' => $adSettings['show_ads'] ?? '0',
+                'ad_frequency' => (int) ($adSettings['ad_frequency'] ?? 3),
+                'ad_slot' => $adSettings['ad_slot'] ?? '',
+                'ad_client_id' => $adSettings['ad_client_id'] ?? '',
+            ],
         ]);
     }
 

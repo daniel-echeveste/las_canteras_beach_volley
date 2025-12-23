@@ -79,6 +79,8 @@ Route::middleware('auth')->group(function () {
     // Admin Routes
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('posts', \App\Http\Controllers\Admin\PostController::class);
+        Route::get('/ads', [\App\Http\Controllers\Admin\AdSettingsController::class, 'index'])->name('ads.index');
+        Route::post('/ads', [\App\Http\Controllers\Admin\AdSettingsController::class, 'update'])->name('ads.update');
     });
 });
 
