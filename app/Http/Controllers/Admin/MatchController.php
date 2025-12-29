@@ -25,6 +25,7 @@ class MatchController extends Controller
                     'visitante' => $match->visitor_team,
                     'cancha' => $match->court ?? '',
                     'resultado' => $match->result ?? '',
+                    'postponed' => $match->postponed ?? false,
                     'category' => $match->category,
                 ];
             });
@@ -50,6 +51,7 @@ class MatchController extends Controller
             'visitor_team' => 'required|string|max:255',
             'court' => 'nullable|string|max:255',
             'result' => 'nullable|string|max:255',
+            'postponed' => 'boolean',
         ]);
 
         LeagueMatch::create($validated);
@@ -70,6 +72,7 @@ class MatchController extends Controller
                 'visitor_team' => $match->visitor_team,
                 'court' => $match->court ?? '',
                 'result' => $match->result ?? '',
+                'postponed' => $match->postponed ?? false,
             ]
         ]);
     }
@@ -85,6 +88,7 @@ class MatchController extends Controller
             'visitor_team' => 'required|string|max:255',
             'court' => 'nullable|string|max:255',
             'result' => 'nullable|string|max:255',
+            'postponed' => 'boolean',
         ]);
 
         $match->update($validated);

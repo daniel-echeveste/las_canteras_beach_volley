@@ -15,6 +15,7 @@ export default function Edit({ auth, match }) {
         visitor_team: match.visitor_team,
         court: match.court || '',
         result: match.result || '',
+        postponed: match.postponed || false,
     });
 
     const submit = (e) => {
@@ -147,6 +148,29 @@ export default function Edit({ auth, match }) {
                                         placeholder="Ej: Canteras, Alcaravaneras"
                                     />
                                     {errors.court && <div className="text-red-500 text-sm mt-1">{errors.court}</div>}
+                                </div>
+
+                                {/* Postponed Toggle */}
+                                <div className="mb-4">
+                                    <label className="flex items-center cursor-pointer">
+                                        <div className="relative">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only"
+                                                checked={data.postponed}
+                                                onChange={(e) => setData('postponed', e.target.checked)}
+                                            />
+                                            <div className={`block w-14 h-8 rounded-full transition-colors ${data.postponed ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                                            <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${data.postponed ? 'transform translate-x-6' : ''}`}></div>
+                                        </div>
+                                        <div className="ml-3 text-gray-700 font-medium">
+                                            {data.postponed ? 'Partido Pospuesto' : 'Partido Normal'}
+                                        </div>
+                                    </label>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Marca como pospuesto si el partido no se jugó en su fecha original
+                                    </p>
+                                    {errors.postponed && <div className="text-red-500 text-sm mt-1">{errors.postponed}</div>}
                                 </div>
 
                                 {/* Result */}

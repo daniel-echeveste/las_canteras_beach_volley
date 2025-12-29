@@ -88,23 +88,27 @@ export default function Index({ auth, matches }) {
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
                                                 {groupedMatches[jornada].map((match) => (
-                                                    <tr key={match.id} className="hover:bg-gray-50">
-                                                        <td className="px-4 py-2 whitespace-nowrap text-sm">{match.fecha}</td>
+                                                    <tr key={match.id} className={`hover:bg-gray-50 ${match.postponed ? 'bg-red-50' : ''}`}>
+                                                        <td className={`px-4 py-2 whitespace-nowrap text-sm ${match.postponed ? 'text-red-600' : ''}`}>{match.fecha}</td>
                                                         <td className="px-4 py-2 whitespace-nowrap text-sm">{match.hora || '-'}</td>
                                                         <td className="px-4 py-2 whitespace-nowrap">
-                                                            <span className={`text-sm font-semibold ${match.local === 'DESCANSA' ? 'text-red-500' : ''}`}>
+                                                            <span className={`text-sm font-semibold ${match.local === 'DESCANSA' ? 'text-red-500' : match.postponed ? 'text-red-700' : ''}`}>
                                                                 {match.local}
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-2 text-center text-gray-400 text-sm">vs</td>
                                                         <td className="px-4 py-2 whitespace-nowrap">
-                                                            <span className={`text-sm font-semibold ${match.visitante === 'DESCANSA' ? 'text-red-500' : ''}`}>
+                                                            <span className={`text-sm font-semibold ${match.visitante === 'DESCANSA' ? 'text-red-500' : match.postponed ? 'text-red-700' : ''}`}>
                                                                 {match.visitante}
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{match.cancha || '-'}</td>
                                                         <td className="px-4 py-2 whitespace-nowrap text-center">
-                                                            {match.resultado ? (
+                                                            {match.postponed ? (
+                                                                <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
+                                                                    POSPUESTO
+                                                                </span>
+                                                            ) : match.resultado ? (
                                                                 <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
                                                                     {match.resultado}
                                                                 </span>

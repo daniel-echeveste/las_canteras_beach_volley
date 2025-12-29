@@ -22,6 +22,7 @@ class AutonomicLeagueController extends Controller
                     'visitante' => $match->visitor_team,
                     'cancha' => $match->court ?? '',
                     'resultado' => $match->result ?? '',
+                    'postponed' => $match->postponed ?? false,
                 ];
             });
 
@@ -38,6 +39,7 @@ class AutonomicLeagueController extends Controller
                     'visitante' => $match->visitor_team,
                     'cancha' => $match->court ?? '',
                     'resultado' => $match->result ?? '',
+                    'postponed' => $match->postponed ?? false,
                 ];
             });
 

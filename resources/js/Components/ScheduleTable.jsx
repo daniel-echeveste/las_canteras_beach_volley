@@ -44,7 +44,7 @@ export default function ScheduleTable({ schedule }) {
                             return (
                                 <tr
                                     key={index}
-                                    className={`bg-white hover:bg-gray-50 ${isLastOfJornada
+                                    className={`${match.postponed ? 'bg-red-50' : 'bg-white'} hover:bg-gray-50 ${isLastOfJornada
                                         ? ' border-b mt-2 border-gray-800'
                                         : 'border-b border-gray-200'
                                         }`}
@@ -52,7 +52,7 @@ export default function ScheduleTable({ schedule }) {
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                         {match.jornada}
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className={`px-6 py-4 ${match.postponed ? 'text-red-600' : ''}`}>
                                         {match.fecha}
                                     </td>
                                     <td className="px-6 py-4">
@@ -60,16 +60,22 @@ export default function ScheduleTable({ schedule }) {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                            <span className={`font-semibold ${match.local === 'DESCANSA' ? 'text-red-500' : ''}`}>{match.local}</span>
+                                            <span className={`font-semibold ${match.local === 'DESCANSA' ? 'text-red-500' : match.postponed ? 'text-red-700' : ''}`}>{match.local}</span>
                                             <span className="hidden sm:inline text-gray-400">vs</span>
-                                            <span className={`font-semibold ${match.visitante === 'DESCANSA' ? 'text-red-500' : ''}`}>{match.visitante}</span>
+                                            <span className={`font-semibold ${match.visitante === 'DESCANSA' ? 'text-red-500' : match.postponed ? 'text-red-700' : ''}`}>{match.visitante}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         {match.cancha || "-"}
                                     </td>
                                     <td className="px-6 py-4">
-                                        {match.resultado || "-"}
+                                        {match.postponed ? (
+                                            <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold uppercase">
+                                                Pospuesto
+                                            </span>
+                                        ) : (
+                                            match.resultado || "-"
+                                        )}
                                     </td>
                                 </tr>
                             );
@@ -100,17 +106,22 @@ export default function ScheduleTable({ schedule }) {
                         {expandedJornada === Number(jornada) && (
                             <div className="p-4 space-y-4 bg-gray-50">
                                 {groupedSchedule[jornada].map((match, index) => (
-                                    <div key={index} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                                    <div key={index} className={`p-4 rounded-lg shadow-sm border ${match.postponed ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'}`}>
                                         <div className="flex justify-between items-center mb-2 text-xs text-gray-500 uppercase tracking-wide">
-                                            <span>{match.fecha} {match.hora ? `• ${match.hora}` : ''}</span>
+                                            <span className={match.postponed ? 'text-red-600' : ''}>{match.fecha} {match.hora ? `• ${match.hora}` : ''}</span>
+                                            {match.postponed && (
+                                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                                                    Pospuesto
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col items-center justify-center py-2 gap-1">
-                                            <div className={`text-base font-bold text-center ${match.local === 'DESCANSA' ? 'text-red-500' : 'text-gray-800'}`}>
+                                            <div className={`text-base font-bold text-center ${match.local === 'DESCANSA' ? 'text-red-500' : match.postponed ? 'text-red-700' : 'text-gray-800'}`}>
                                                 {match.local}
                                             </div>
                                             <div className="text-xs font-medium text-gray-400">vs</div>
-                                            <div className={`text-base font-bold text-center ${match.visitante === 'DESCANSA' ? 'text-red-500' : 'text-gray-800'}`}>
+                                            <div className={`text-base font-bold text-center ${match.visitante === 'DESCANSA' ? 'text-red-500' : match.postponed ? 'text-red-700' : 'text-gray-800'}`}>
                                                 {match.visitante}
                                             </div>
                                         </div>
@@ -119,8 +130,8 @@ export default function ScheduleTable({ schedule }) {
                                             <div className="text-gray-600 text-xs">
                                                 <span className="font-semibold">Cancha:</span> {match.cancha || "-"}
                                             </div>
-                                            <div className="font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded text-xs">
-                                                {match.resultado || "-"}
+                                            <div className={`font-bold px-2 py-1 rounded text-xs ${match.postponed ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-900'}`}>
+                                                {match.postponed ? 'Pospuesto' : (match.resultado || "-")}
                                             </div>
                                         </div>
                                     </div>

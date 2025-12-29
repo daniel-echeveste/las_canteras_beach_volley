@@ -19,11 +19,13 @@ class LeagueMatch extends Model
         'visitor_team',
         'court',
         'result',
+        'postponed',
         'category', // 'male' or 'female'
     ];
 
     protected $casts = [
         'date' => 'date',
         'jornada' => 'integer',
+        'postponed' => 'boolean',
     ];
 }
