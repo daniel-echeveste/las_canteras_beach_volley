@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\MatchController; 
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\TournamentRegistrationController;
+use App\Http\Controllers\AutonomicLeagueController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -29,9 +30,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/liga-autonomica', function () {
-    return Inertia::render('AutonomicLeague');
-})->name('autonomic.league');
+Route::get('/liga-autonomica', [AutonomicLeagueController::class, 'index'])->name('autonomic.league');
 
 Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog');
 Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
@@ -79,6 +78,7 @@ Route::middleware('auth')->group(function () {
     // Admin Routes
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('posts', \App\Http\Controllers\Admin\PostController::class);
+        Route::resource('matches', \App\Http\Controllers\Admin\MatchController::class);
         Route::get('/ads', [\App\Http\Controllers\Admin\AdSettingsController::class, 'index'])->name('ads.index');
         Route::post('/ads', [\App\Http\Controllers\Admin\AdSettingsController::class, 'update'])->name('ads.update');
     });

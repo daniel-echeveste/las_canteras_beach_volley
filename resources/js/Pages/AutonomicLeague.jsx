@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Head, Link } from "@inertiajs/react";
 import Navbar from "@/Components/Navbar";
 import ScheduleTable from "@/Components/ScheduleTable";
-import Schedule from "@/Components/Schedules";
 
 // Podium position component for top 3
 function PodiumCard({ team, position, delay }) {
@@ -61,13 +60,12 @@ function StatsCard({ icon, value, label, color }) {
     );
 }
 
-export default function AutonomicLeague() {
+export default function AutonomicLeague({ maleSchedule, femaleSchedule }) {
     const [isFemale, setIsFemale] = useState(false);
     const [viewMode, setViewMode] = useState('schedule');
     const [isAnimated, setIsAnimated] = useState(false);
 
-    const schedule = Schedule();
-    const currentSchedule = isFemale ? schedule.female : schedule.male;
+    const currentSchedule = isFemale ? femaleSchedule : maleSchedule;
 
     const leagueTitle = isFemale
         ? "Liga Segunda División Nacional Voley Playa Femenino 2025/2026"

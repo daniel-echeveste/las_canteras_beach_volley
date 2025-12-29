@@ -26,6 +26,9 @@ export default function AdminLayout({ user, header, children }) {
                                 <NavLink href={route('admin.posts.index')} active={route().current('admin.posts.*')}>
                                     Blog Posts
                                 </NavLink>
+                                <NavLink href={route('admin.matches.index')} active={route().current('admin.matches.*')}>
+                                    Liga Autonómica
+                                </NavLink>
                                 <NavLink href={route('admin.ads.index')} active={route().current('admin.ads.*')}>
                                     Anuncios
                                 </NavLink>
