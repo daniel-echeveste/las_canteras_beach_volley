@@ -64,7 +64,48 @@ export default function Ranking({ ranking }) {
                         />
                     </div>
 
-                    <div className="overflow-x-auto shadow-md sm:rounded-lg bg-white">
+                    {/* Mobile Cards View */}
+                    <div className="md:hidden space-y-3">
+                        {filteredRanking.length > 0 ? (
+                            filteredRanking.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className="bg-white rounded-lg shadow-md p-4 border-l-4 border-[#1CA9C9]"
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <span className="flex items-center justify-center w-10 h-10 bg-[#1CA9C9] text-white font-bold rounded-full text-sm">
+                                                {item.rank}
+                                            </span>
+                                            <div>
+                                                <p className="font-semibold text-gray-900 text-sm leading-tight">
+                                                    {item.player}
+                                                </p>
+                                                <p className="text-[#1CA9C9] font-bold text-lg mt-1">
+                                                    {item.points} pts
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {item.idPersona && (
+                                            <button
+                                                onClick={() => openTorneosModal(item.idPersona, item.player)}
+                                                className="px-3 py-2 bg-[#1CA9C9] text-white text-xs font-semibold rounded-lg hover:bg-[#168a9c] transition-colors duration-200 shadow-sm flex-shrink-0"
+                                            >
+                                                Torneos
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
+                                No se encontraron resultados.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto shadow-md sm:rounded-lg bg-white">
                         <table className="w-full text-sm text-left text-gray-500">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                 <tr>
