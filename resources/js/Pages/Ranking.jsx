@@ -71,7 +71,7 @@ export default function Ranking({ ranking }) {
                                     <th scope="col" className="px-6 py-3">Posición</th>
                                     <th scope="col" className="px-6 py-3">Apellidos / Nombre</th>
                                     <th scope="col" className="px-6 py-3">Puntos</th>
-                                    <th scope="col" className="px-6 py-3 text-center">Acciones</th>
+                                    <th scope="col" className="px-6 py-3 text-center"></th>
                                 </tr>
                             </thead>
                             <tbody>
