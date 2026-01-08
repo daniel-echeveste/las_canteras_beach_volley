@@ -215,6 +215,7 @@ export default function Ranking({ ranking }) {
 
             {/* Styles for tournament content */}
             <style>{`
+                /* Desktop styles */
                 .torneos-content table {
                     width: 100%;
                     border-collapse: collapse;
@@ -236,6 +237,79 @@ export default function Ranking({ ranking }) {
                 .torneos-content a {
                     color: #1CA9C9;
                     text-decoration: underline;
+                }
+
+                /* Mobile card styles for tournament table */
+                @media (max-width: 767px) {
+                    .torneos-content table {
+                        border: none;
+                    }
+                    .torneos-content thead {
+                        display: none;
+                    }
+                    .torneos-content tbody tr {
+                        display: flex;
+                        flex-wrap: wrap;
+                        align-items: center;
+                        background: white;
+                        border: 1px solid #e5e7eb;
+                        border-left: 3px solid #1CA9C9;
+                        border-radius: 6px;
+                        margin-bottom: 8px;
+                        padding: 10px 12px;
+                        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+                    }
+                    .torneos-content td {
+                        border: none;
+                        padding: 0;
+                        font-size: 13px;
+                    }
+                    /* Hide all columns by default */
+                    .torneos-content td {
+                        display: none;
+                    }
+                    /* Show 1st column (tournament name) - full width as title */
+                    .torneos-content td:nth-child(3) {
+                        display: block;
+                        width: 100%;
+                        font-weight: 600;
+                        font-size: 16px;
+                        color: #1f2937;
+                        line-height: 1.3;
+                    }
+                    /* Show 2nd column (date) - inline */
+                    .torneos-content td:nth-child(2) {
+                        display: inline-block;
+                        color: #6b7280;
+                        font-size: 12px;
+                        margin-right: 12px;
+                    }
+                    .torneos-content td:nth-child(2):before {
+                        content: "📅 ";
+                    }
+                    /* Show last column (points) - inline, highlighted */
+                    .torneos-content td:last-child {
+                        display: inline-block;
+                        color: #1CA9C9;
+                        font-weight: 700;
+                        font-size: 13px;
+                    }
+                    .torneos-content td:nth-child(6) {
+                        display: inline-block;
+                        color: #1CA9C9;
+                        font-weight: 700;
+                        font-size: 13px;
+                        margin-right: 12px;
+                       
+                    }
+                     .torneos-content td:nth-child(6):before {
+                        content: "Position: ";
+                       
+                    }
+
+                    .torneos-content td:last-child:before {
+                        content: "Pts: ";
+                    }
                 }
             `}</style>
         </>
