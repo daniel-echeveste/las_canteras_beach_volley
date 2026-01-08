@@ -40,6 +40,7 @@ Route::post('/tournament-registration/{postId}', [TournamentRegistrationControll
 
 
 Route::get('/ranking', [RankingController::class, 'index'])->name('ranking');
+Route::get('/ranking/torneos/{idPersona}', [RankingController::class, 'getTorneos'])->name('ranking.torneos');
 
 Route::get('/forecast', function () {
     return Inertia::render('Forecast');
