@@ -404,6 +404,7 @@ export default function LandingPage({ latestPosts = [] }) {
                                     <li><Link href="/liga-autonomica" className="text-gray-400 hover:text-[#1CA9C9] transition-colors">Liga Autonómica</Link></li>
                                     <li><Link href="/ranking" className="text-gray-400 hover:text-[#1CA9C9] transition-colors">Ranking Nacional</Link></li>
                                     <li><Link href="/forecast" className="text-gray-400 hover:text-[#1CA9C9] transition-colors">Pronóstico</Link></li>
+                                    <li><Link href="/admin/matches" className="text-gray-400 hover:text-[#1CA9C9] transition-colors">Partidos</Link></li>
                                 </ul>
                             </div>
 
