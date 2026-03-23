@@ -183,7 +183,7 @@ function StarRating({ rating }) {
             {[1, 2, 3, 4, 5].map((star) => (
                 <svg
                     key={star}
-                    className={`w-4 h-4 ${star <= rating ? "text-amber-400" : "text-gray-200"}`}
+                    className={`w-3 h-3 sm:w-4 sm:h-4 ${star <= rating ? "text-amber-400" : "text-gray-200"}`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
                 >
@@ -200,7 +200,7 @@ function Badge({ type }) {
     const isAmazon = type === "Amazon";
     return (
         <span
-            className={`absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm ${
+            className={`absolute top-2 left-2 sm:top-3 sm:left-3 text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-sm ${
                 isAmazon
                     ? "bg-[#FF9900] text-white"
                     : "bg-[#1CA9C9] text-white"
@@ -216,18 +216,18 @@ function ProductCard({ product }) {
     const [imgError, setImgError] = useState(false);
 
     return (
-        <div className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden border border-gray-100">
+        <div className="group bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden border border-gray-100 h-full">
             {/* Image */}
-            <div className="relative bg-gray-50 aspect-square overflow-hidden">
+            <div className="relative bg-white aspect-square overflow-hidden shrink-0 border-b border-gray-50">
                 {!imgError ? (
                     <img
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-contain p-3 sm:p-4 group-hover:scale-105 transition-transform duration-500"
                         onError={() => setImgError(true)}
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-5xl">
+                    <div className="w-full h-full flex items-center justify-center text-4xl sm:text-5xl">
                         🏐
                     </div>
                 )}
@@ -235,19 +235,19 @@ function ProductCard({ product }) {
             </div>
 
             {/* Content */}
-            <div className="p-5 flex flex-col flex-1 gap-3">
-                <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2 group-hover:text-[#1CA9C9] transition-colors">
+            <div className="p-3 sm:p-5 flex flex-col flex-1 gap-2 sm:gap-3">
+                <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-tight sm:leading-snug line-clamp-2 group-hover:text-[#1CA9C9] transition-colors">
                     {product.name}
                 </h3>
 
-                <p className="text-sm text-gray-500 line-clamp-2 flex-1">
+                <p className="text-[11px] sm:text-sm text-gray-500 line-clamp-2 flex-1">
                     {product.description}
                 </p>
 
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-auto sm:mt-1 gap-1 sm:gap-0">
                     <StarRating rating={product.rating} />
                     {product.price && (
-                        <span className="text-lg font-extrabold text-gray-800">
+                        <span className="text-sm sm:text-lg font-extrabold text-gray-800">
                             {product.price}
                         </span>
                     )}
@@ -257,10 +257,11 @@ function ProductCard({ product }) {
                     href={product.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-auto w-full text-center bg-[#1CA9C9] hover:bg-[#158BA8] active:scale-95 text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                    className="mt-2 sm:mt-auto w-full text-center bg-[#1CA9C9] hover:bg-[#158BA8] active:scale-95 text-white font-semibold py-2 px-3 sm:py-2.5 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm"
                 >
-                    Ver producto
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="hidden sm:inline">Ver producto</span>
+                    <span className="sm:hidden">Ver oferta</span>
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
                 </a>
@@ -356,7 +357,7 @@ export default function Shop() {
 
                     {/* Grid */}
                     {filtered.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
                             {filtered.map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
