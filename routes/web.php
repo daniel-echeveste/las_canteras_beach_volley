@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\MatchController; 
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\TournamentRegistrationController;
 use App\Http\Controllers\AutonomicLeagueController;
 /*
@@ -41,6 +42,9 @@ Route::post('/tournament-registration/{postId}', [TournamentRegistrationControll
 
 Route::get('/ranking', [RankingController::class, 'index'])->name('ranking');
 Route::get('/ranking/torneos/{idPersona}', [RankingController::class, 'getTorneos'])->name('ranking.torneos');
+
+Route::get('/calendario', [CalendarController::class, 'index'])->name('calendario');
+Route::get('/calendario/clasificacion/{idTorneo}', [CalendarController::class, 'getClasificacion'])->name('calendario.clasificacion');
 
 Route::get('/forecast', function () {
     return Inertia::render('Forecast');
