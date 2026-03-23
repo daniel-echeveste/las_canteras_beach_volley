@@ -71,6 +71,10 @@ Route::get('/webgl/exp6', function () {
 })->name('webgl.exp6');
 
 
+Route::get('/tienda', function () {
+    return Inertia::render('Shop');
+})->name('tienda');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

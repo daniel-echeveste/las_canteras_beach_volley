@@ -20,6 +20,7 @@ export default function Navbar() {
         { name: "Liga", href: "/liga-autonomica", devOnly: false },
         { name: "Ranking", href: "/ranking", devOnly: false },
         { name: "Calendario", href: "/calendario", devOnly: false },
+        { name: "Tienda", href: "/tienda", devOnly: false },
         { name: "Forecast", href: "/forecast", devOnly: false },
         { name: "Webcams", href: "/webcams", devOnly: true },
         { name: "3D ", href: "/webgl", devOnly: true },
