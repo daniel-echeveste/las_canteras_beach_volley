@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { Head } from "@inertiajs/react";
 import Navbar from "@/Components/Navbar";
 
-export default function Ranking({ ranking }) {
+export default function Ranking({ rankingMasculino, rankingFemenino }) {
     const [searchTerm, setSearchTerm] = useState("");
+    const [gender, setGender] = useState("masculino");
     const [modalOpen, setModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState("");
     const [modalLoading, setModalLoading] = useState(false);
     const [selectedPlayer, setSelectedPlayer] = useState("");
+
+    const ranking = gender === "masculino" ? rankingMasculino : rankingFemenino;
 
     // Filter ranking based on search term while preserving original rank
     const filteredRanking = ranking.filter(item =>
@@ -48,10 +51,36 @@ export default function Ranking({ ranking }) {
             <div className="min-h-screen bg-[#FFF8E8] text-gray-900 font-sans">
                 <Navbar />
                 <div className="pt-24 max-w-5xl mx-auto px-6 pb-12">
-                    <h1 className="text-4xl font-extrabold text-[#1CA9C9] mb-6">Ranking Nacional Masculino</h1>
+                    <h1 className="text-4xl font-extrabold text-[#1CA9C9] mb-6">
+                        Ranking Nacional {gender === "masculino" ? "Masculino" : "Femenino"}
+                    </h1>
                     <p className="text-lg text-gray-700 mb-8">
                         Clasificación actualizada de la Real Federación Española de Voleibol.
                     </p>
+
+                    {/* Gender Switch */}
+                    <div className="mb-6 inline-flex rounded-lg border border-gray-300 bg-white p-1 shadow-sm">
+                        <button
+                            onClick={() => setGender("masculino")}
+                            className={`px-5 py-2 text-sm font-semibold rounded-md transition-colors duration-200 ${
+                                gender === "masculino"
+                                    ? "bg-[#1CA9C9] text-white shadow"
+                                    : "text-gray-600 hover:text-gray-900"
+                            }`}
+                        >
+                            Masculino
+                        </button>
+                        <button
+                            onClick={() => setGender("femenino")}
+                            className={`px-5 py-2 text-sm font-semibold rounded-md transition-colors duration-200 ${
+                                gender === "femenino"
+                                    ? "bg-[#1CA9C9] text-white shadow"
+                                    : "text-gray-600 hover:text-gray-900"
+                            }`}
+                        >
+                            Femenino
+                        </button>
+                    </div>
 
                     {/* Search Input */}
                     <div className="mb-6">
@@ -152,7 +181,7 @@ export default function Ranking({ ranking }) {
                     </div>
 
                     <div className="mt-8 text-sm text-gray-500 text-center">
-                        Fuente: <a href="https://www.rfevb.com/ranking-voley-playa-masculino" target="_blank" rel="noopener noreferrer" className="text-[#1CA9C9] hover:underline">RFEVB</a>
+                        Fuente: <a href={`https://www.rfevb.com/ranking-voley-playa-${gender}`} target="_blank" rel="noopener noreferrer" className="text-[#1CA9C9] hover:underline">RFEVB</a>
                     </div>
                 </div>
             </div>
