@@ -10,7 +10,7 @@ export default function Ranking({ rankingMasculino, rankingFemenino }) {
     const [modalLoading, setModalLoading] = useState(false);
     const [selectedPlayer, setSelectedPlayer] = useState("");
 
-    const ranking = gender === "masculino" ? rankingMasculino : rankingFemenino;
+    const ranking = gender === "masculino " ? rankingMasculino : rankingFemenino;
 
     // Filter ranking based on search term while preserving original rank
     const filteredRanking = ranking.filter(item =>
