@@ -103,7 +103,10 @@ export default function Navbar() {
 
             {/* Menú móvil */}
             {open && (
-                <div className="xl:hidden fixed inset-x-0 top-20 bottom-0 bg-white/95 backdrop-blur-md border-t border-black/5 overflow-y-auto animate-[menu-in_.2s_ease-out]">
+                // Ojo: el header tiene backdrop-filter, que convierte al header en el
+                // bloque contenedor de los hijos `fixed`; por eso se usa absolute +
+                // altura explícita en lugar de fixed + bottom-0.
+                <div className="xl:hidden absolute inset-x-0 top-full h-[calc(100dvh-5rem)] bg-white border-t border-black/5 overflow-y-auto overscroll-contain animate-[menu-in_.2s_ease-out]">
                     <ul className="max-w-7xl mx-auto px-4 sm:px-6 py-4 grid gap-1">
                         {links.map((link) => {
                             const active = isActive(link.href);
