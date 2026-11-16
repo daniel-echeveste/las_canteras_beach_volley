@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Head } from "@inertiajs/react";
-import Navbar from "@/Components/Navbar";
+import { PageShell, PageHero, Segmented, EmptyState, Icon } from "@/Components/ui";
 
 // ─── PRODUCTOS ──────────────────────────────────────────────────────────────
 // Edita este array para añadir / quitar productos.
@@ -199,14 +198,8 @@ function Badge({ type }) {
     if (!type) return null;
     const isAmazon = type === "Amazon";
     return (
-        <span
-            className={`absolute top-2 left-2 sm:top-3 sm:left-3 text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-sm ${
-                isAmazon
-                    ? "bg-[#FF9900] text-white"
-                    : "bg-[#1CA9C9] text-white"
-            }`}
-        >
-            {isAmazon ? "🛒 Amazon" : "⭐ Tienda Amiga"}
+        <span className={`absolute top-3 left-3 badge shadow-sm ${isAmazon ? "bg-[#232F3E] text-white" : "bg-[#1CA9C9] text-white"}`}>
+            {isAmazon ? "Amazon" : "Tienda amiga"}
         </span>
     );
 }
@@ -216,57 +209,41 @@ function ProductCard({ product }) {
     const [imgError, setImgError] = useState(false);
 
     return (
-        <div className="group bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden border border-gray-100 h-full">
-            {/* Image */}
-            <div className="relative bg-white aspect-square overflow-hidden shrink-0 border-b border-gray-50">
+        <a
+            href={product.link}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="group bg-white rounded-3xl border border-black/5 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden h-full"
+        >
+            <div className="relative aspect-square bg-white overflow-hidden">
                 {!imgError ? (
                     <img
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-contain p-3 sm:p-4 group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                        className="w-full h-full object-contain p-5 sm:p-7 group-hover:scale-105 transition-transform duration-500"
                         onError={() => setImgError(true)}
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl sm:text-5xl">
-                        🏐
-                    </div>
+                    <img src="/logo-nobg.png" alt="" className="absolute inset-0 m-auto w-16 h-16 opacity-30" />
                 )}
                 <Badge type={product.badge} />
             </div>
 
-            {/* Content */}
-            <div className="p-3 sm:p-5 flex flex-col flex-1 gap-2 sm:gap-3">
-                <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-tight sm:leading-snug line-clamp-2 group-hover:text-[#1CA9C9] transition-colors">
+            <div className="p-4 sm:p-5 flex flex-col flex-1 gap-2 border-t border-gray-100">
+                <h3 className="font-extrabold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-[#0D5C6E]">
                     {product.name}
                 </h3>
-
-                <p className="text-[11px] sm:text-sm text-gray-500 line-clamp-2 flex-1">
-                    {product.description}
-                </p>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-auto sm:mt-1 gap-1 sm:gap-0">
+                <div className="flex-1"><p className="text-xs sm:text-sm text-gray-500 line-clamp-2">{product.description}</p></div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mt-1">
                     <StarRating rating={product.rating} />
-                    {product.price && (
-                        <span className="text-sm sm:text-lg font-extrabold text-gray-800">
-                            {product.price}
-                        </span>
-                    )}
+                    {product.price && <span className="text-base sm:text-lg font-black text-gray-900">{product.price.trim()}</span>}
                 </div>
-
-                <a
-                    href={product.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 sm:mt-auto w-full text-center bg-[#1CA9C9] hover:bg-[#158BA8] active:scale-95 text-white font-semibold py-2 px-3 sm:py-2.5 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm"
-                >
-                    <span className="hidden sm:inline">Ver producto</span>
-                    <span className="sm:hidden">Ver oferta</span>
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                </a>
+                <span className="mt-2 w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-[#0D5C6E] group-hover:bg-[#127F98] text-white font-bold py-2.5 text-xs sm:text-sm transition-colors">
+                    Ver producto <Icon name="external" className="w-3.5 h-3.5" />
+                </span>
             </div>
-        </div>
+        </a>
     );
 }
 
@@ -284,108 +261,59 @@ export default function Shop() {
         return categoryMatch && badgeMatch;
     });
 
-    return (
-        <>
-            <Head title="Tienda - Las Canteras Beach Volley" />
-            <div className="min-h-screen bg-[#FFF8E8] text-gray-900 font-sans">
-                <Navbar />
+    const hasFriendShops = PRODUCTS.some((p) => p.badge === "Tienda Amiga");
+    const count = (key) => (key === "all" ? PRODUCTS.length : PRODUCTS.filter((p) => p.category === key).length);
 
-                {/* Hero */}
-                <div className="pt-24 pb-10 bg-gradient-to-br from-[#1CA9C9]/10 via-[#FFF8E8] to-[#FFF8E8]">
-                    <div className="max-w-6xl mx-auto px-6">
-                        <div className="flex items-center gap-3 mb-2">
-                            <span className="text-4xl">🏐</span>
-                            <h1 className="text-4xl font-extrabold text-[#1CA9C9]">Tienda</h1>
-                        </div>
-                        <p className="text-gray-600 text-lg max-w-xl">
-                            Material seleccionado para jugadores de vóley playa. Afiliados de Amazon y productos de tiendas amigas.
-                        </p>
-                    </div>
+    return (
+        <PageShell title="Tienda - Las Canteras Beach Volley">
+            <PageHero
+                compact
+                eyebrow="Material recomendado"
+                title="Tienda"
+                subtitle="Balones, redes, ropa y gafas que usamos y recomendamos para jugar en la arena."
+            />
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+                <div className="flex flex-col md:flex-row md:items-center gap-3 mb-8">
+                    <Segmented
+                        value={activeCategory}
+                        onChange={setActiveCategory}
+                        options={CATEGORIES.filter((c) => count(c.key) > 0).map((c) => ({ value: c.key, label: c.label, count: count(c.key) }))}
+                    />
+                    {hasFriendShops && (
+                        <Segmented
+                            size="sm"
+                            value={activeBadge}
+                            onChange={setActiveBadge}
+                            options={[
+                                { value: "all", label: "Todas las tiendas" },
+                                { value: "amazon", label: "Amazon" },
+                                { value: "amiga", label: "Tiendas amigas" },
+                            ]}
+                        />
+                    )}
                 </div>
 
-                <div className="max-w-6xl mx-auto px-6 pb-20">
-
-                    {/* Filters */}
-                    <div className="py-6 flex flex-wrap gap-3 items-center">
-                        {/* Category pills */}
-                        <div className="flex flex-wrap gap-2">
-                            {CATEGORIES.map((cat) => (
-                                <button
-                                    key={cat.key}
-                                    onClick={() => setActiveCategory(cat.key)}
-                                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 ${
-                                        activeCategory === cat.key
-                                            ? "bg-[#1CA9C9] text-white shadow-md shadow-[#1CA9C9]/30"
-                                            : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
-                                    }`}
-                                >
-                                    <span>{cat.emoji}</span>
-                                    {cat.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Divider */}
-                        <div className="hidden sm:block w-px h-6 bg-gray-300 mx-1" />
-
-                        {/* Badge filters */}
-                        <div className="flex gap-2">
-                            {[
-                                { key: "all",    label: "Todas las tiendas" },
-                                { key: "amazon", label: "🛒 Amazon" },
-                                { key: "amiga",  label: "⭐ Tiendas Amigas" },
-                            ].map((b) => (
-                                <button
-                                    key={b.key}
-                                    onClick={() => setActiveBadge(b.key)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
-                                        activeBadge === b.key
-                                            ? "bg-gray-800 text-white"
-                                            : "bg-white text-gray-500 hover:bg-gray-100 border border-gray-200"
-                                    }`}
-                                >
-                                    {b.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Count */}
-                        <span className="ml-auto text-sm text-gray-400 font-medium hidden sm:block">
-                            {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
-                        </span>
+                {filtered.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                        {filtered.map((product) => <ProductCard key={product.id} product={product} />)}
                     </div>
-
-                    {/* Grid */}
-                    {filtered.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-                            {filtered.map((product) => (
-                                <ProductCard key={product.id} product={product} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-20">
-                            <div className="text-6xl mb-4">🏖️</div>
-                            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                                No hay productos en esta categoría
-                            </h3>
-                            <p className="text-gray-500 mb-6">
-                                Prueba con otra categoría o quita los filtros.
-                            </p>
-                            <button
-                                onClick={() => { setActiveCategory("all"); setActiveBadge("all"); }}
-                                className="text-[#1CA9C9] font-semibold hover:underline"
-                            >
+                ) : (
+                    <EmptyState
+                        icon="bag"
+                        title="No hay productos en esta categoría"
+                        action={
+                            <button onClick={() => { setActiveCategory("all"); setActiveBadge("all"); }} className="font-bold text-[#0D5C6E] hover:underline">
                                 Ver todos los productos
                             </button>
-                        </div>
-                    )}
+                        }
+                    />
+                )}
 
-                    {/* Disclaimer */}
-                    <p className="mt-12 text-center text-xs text-gray-400">
-                        Algunos enlaces son de afiliados de Amazon. Al comprar a través de ellos, apoyás a Las Canteras Beach Volley sin coste adicional para ti.
-                    </p>
-                </div>
-            </div>
-        </>
+                <p className="mt-12 text-center text-xs text-gray-500 max-w-xl mx-auto">
+                    Algunos enlaces son de afiliados de Amazon. Si compras a través de ellos, apoyas a Las Canteras Beach Volley sin ningún coste adicional para ti.
+                </p>
+            </main>
+        </PageShell>
     );
 }

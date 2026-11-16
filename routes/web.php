@@ -28,6 +28,8 @@ Route::get('/', function () {
 
     return Inertia::render('LandingPage', [
         'latestPosts' => $latestPosts,
+        'league' => \App\Models\LeagueSnapshot::summary(),
+        'season' => config('league.season'),
     ]);
 });
 

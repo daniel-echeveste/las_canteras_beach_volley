@@ -1,6 +1,46 @@
 import React, { useState } from "react";
-import { Head, Link, router } from "@inertiajs/react";
-import Navbar from "@/Components/Navbar";
+import { Link } from "@inertiajs/react";
+import { PageShell, Icon } from "@/Components/ui";
+import { POST_TYPES } from "@/Pages/Blog";
+
+const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    try {
+        if (url.includes("youtu.be/")) return url.split("youtu.be/")[1]?.split(/[?&#]/)[0];
+        if (url.includes("/embed/")) return url.split("/embed/")[1]?.split(/[?&#]/)[0];
+        if (url.includes("/shorts/")) return url.split("/shorts/")[1]?.split(/[?&#]/)[0];
+        return new URL(url).searchParams.get("v");
+    } catch {
+        return null;
+    }
+};
+
+const fmtLong = (d, withTime = false) =>
+    new Date(d).toLocaleDateString("es-ES", {
+        weekday: withTime ? "long" : undefined,
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
+    });
+
+function DateCallout({ label, date, tone }) {
+    const tones = {
+        violet: "bg-violet-50 ring-violet-200 text-violet-900",
+        amber: "bg-amber-50 ring-amber-200 text-amber-900",
+    };
+    return (
+        <div className={`flex items-center gap-4 rounded-2xl ring-1 p-4 sm:p-5 ${tones[tone]}`}>
+            <span className="w-12 h-12 rounded-xl bg-white/70 flex items-center justify-center shrink-0">
+                <Icon name="calendar" className="w-6 h-6" />
+            </span>
+            <div>
+                <div className="text-xs font-bold uppercase tracking-wider opacity-70">{label}</div>
+                <div className="text-lg font-extrabold first-letter:uppercase">{fmtLong(date, true)}</div>
+            </div>
+        </div>
+    );
+}
 
 export default function Post({ post }) {
     const [formData, setFormData] = useState({});
@@ -8,326 +48,179 @@ export default function Post({ post }) {
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
 
-    // Helper function to extract YouTube video ID from various URL formats
-    const getYouTubeVideoId = (url) => {
-        if (!url) return null;
-        try {
-            // Handle youtu.be short URLs
-            if (url.includes('youtu.be/')) {
-                return url.split('youtu.be/')[1]?.split(/[?&#]/)[0];
-            }
-            // Handle youtube.com/embed/ URLs
-            if (url.includes('/embed/')) {
-                return url.split('/embed/')[1]?.split(/[?&#]/)[0];
-            }
-            // Handle youtube.com/watch?v= URLs
-            const urlObj = new URL(url);
-            return urlObj.searchParams.get('v');
-        } catch (e) {
-            console.error('Error parsing YouTube URL:', e);
-            return null;
-        }
-    };
+    const type = POST_TYPES[post.post_type] ?? POST_TYPES.noticia;
+    const videoId = getYouTubeVideoId(post.youtube_url);
+    const hasForm = post.post_type === "torneo" && post.has_form && post.form_fields?.length > 0;
+    const isTournamentPast = post.tournament_date && new Date(post.tournament_date) < new Date();
 
-    const handleFormChange = (fieldName, value) => {
-        setFormData(prev => ({
-            ...prev,
-            [fieldName]: value
-        }));
-    };
+    const handleChange = (name, value) => setFormData((prev) => ({ ...prev, [name]: value }));
 
-    const handleTournamentSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         setError(null);
-
         try {
-            const response = await fetch(route('tournament.register', post.id), {
-                method: 'POST',
+            const response = await fetch(route("tournament.register", post.id), {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
                 },
                 body: JSON.stringify(formData),
             });
-
-            const data = await response.json();
-
+            const data = await response.json().catch(() => ({}));
             if (response.ok) {
                 setSubmitted(true);
                 setFormData({});
             } else {
-                setError(data.message || 'Error al enviar el formulario');
+                setError(data.message || "Error al enviar el formulario");
             }
-        } catch (err) {
-            setError('Error al enviar el formulario. Por favor, inténtalo de nuevo.');
+        } catch {
+            setError("Error al enviar el formulario. Por favor, inténtalo de nuevo.");
         } finally {
             setSubmitting(false);
         }
     };
 
-    const renderFormField = (field) => {
-        const commonClasses = "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1CA9C9] focus:ring-[#1CA9C9]";
-
-        switch (field.type) {
-            case 'textarea':
-                return (
-                    <textarea
-                        value={formData[field.name] || ''}
-                        onChange={(e) => handleFormChange(field.name, e.target.value)}
-                        required={field.required}
-                        rows="4"
-                        className={commonClasses}
-                    />
-                );
-            case 'select':
-                return (
-                    <select
-                        value={formData[field.name] || ''}
-                        onChange={(e) => handleFormChange(field.name, e.target.value)}
-                        required={field.required}
-                        className={commonClasses}
-                    >
-                        <option value="">Selecciona una opción</option>
-                        {field.options && field.options.map((option, idx) => (
-                            <option key={idx} value={option}>{option}</option>
-                        ))}
-                    </select>
-                );
-            default:
-                return (
-                    <input
-                        type={field.type}
-                        value={formData[field.name] || ''}
-                        onChange={(e) => handleFormChange(field.name, e.target.value)}
-                        required={field.required}
-                        className={commonClasses}
-                    />
-                );
+    const field = (f) => {
+        const cls = "mt-1.5 block w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-[#1CA9C9] focus:ring-[#1CA9C9]";
+        const common = { value: formData[f.name] || "", onChange: (e) => handleChange(f.name, e.target.value), required: f.required, className: cls };
+        if (f.type === "textarea") return <textarea rows="4" {...common} />;
+        if (f.type === "select") {
+            return (
+                <select {...common}>
+                    <option value="">Selecciona una opción</option>
+                    {f.options?.map((o, i) => <option key={i} value={o}>{o}</option>)}
+                </select>
+            );
         }
+        return <input type={f.type} {...common} />;
     };
 
     return (
-        <>
-            <Head title={`${post.title} - Las Canteras Vóley`} />
-            <div className="min-h-screen bg-[#FFF8E8] text-gray-900 font-sans">
-                <Navbar />
-                <div className="pt-24 max-w-4xl mx-auto px-6 pb-12">
-                    {/* Back to Blog Link */}
-                    <Link
-                        href="/blog"
-                        className="inline-flex items-center text-[#1CA9C9] hover:text-[#158BA8] font-semibold mb-6 transition-colors"
-                    >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Volver al Blog
+        <PageShell title={`${post.title} - Las Canteras Beach Volley`}>
+            {/* Cabecera */}
+            <header className="relative pt-28 pb-16 sm:pb-20 overflow-hidden bg-[#0A2E37]">
+                {post.image_path && (
+                    <img onError={(e) => (e.currentTarget.style.display = "none")} src={`/storage/${post.image_path}`} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#127F98]/80 via-[#0A2E37]/85 to-[#0A2E37]" />
+                <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
+                    <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm font-bold text-white/70 hover:text-white mb-8">
+                        <Icon name="arrowLeft" className="w-4 h-4" /> Volver al blog
                     </Link>
-
-                    {/* Post Header */}
-                    <article className="bg-white rounded-xl shadow-lg overflow-hidden">
-                        {/* Post Type Badge */}
-                        <div className="px-8 pt-6">
-                            <span className={`px-3 py-1 inline-flex items-center text-sm font-semibold rounded-full gap-2 ${post.post_type === 'noticia' ? 'bg-blue-100 text-blue-800' :
-                                post.post_type === 'evento' ? 'bg-purple-100 text-purple-800' :
-                                    'bg-orange-100 text-orange-800'
-                                }`}>
-                                {post.post_type === 'noticia' && (
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                                    </svg>
-                                )}
-                                {post.post_type === 'evento' && (
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                )}
-                                {post.post_type === 'torneo' && (
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                    </svg>
-                                )}
-                                {post.post_type === 'noticia' ? 'Noticia' :
-                                    post.post_type === 'evento' ? 'Evento' :
-                                        'Torneo'}
-                            </span>
-                        </div>
-
-                        {post.youtube_url && getYouTubeVideoId(post.youtube_url) ? (
-                            <div className="w-full h-96 bg-black">
-                                <iframe
-                                    width="100%"
-                                    height="100%"
-                                    src={`https://www.youtube.com/embed/${getYouTubeVideoId(post.youtube_url)}`}
-                                    title={post.title}
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                ></iframe>
-                            </div>
-                        ) : post.image_path && (
-                            <img
-                                src={`/storage/${post.image_path}`}
-                                alt={post.title}
-                                className="w-full h-96 object-cover"
-                            />
-                        )}
-
-                        <div className="p-8">
-                            {/* Date */}
-                            <div className="text-sm text-gray-500 mb-4">
-                                {new Date(post.created_at).toLocaleDateString('es-ES', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
-                            </div>
-
-                            {/* Event Date - Only for eventos */}
-                            {post.post_type === 'evento' && post.event_date && (
-                                <div className="mb-6 p-4 bg-purple-50 border-l-4 border-purple-500 rounded">
-                                    <div className="flex items-center">
-                                        <svg className="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <div>
-                                            <div className="text-sm font-semibold text-purple-800">Fecha del Evento</div>
-                                            <div className="text-lg font-bold text-purple-900">
-                                                {new Date(post.event_date).toLocaleDateString('es-ES', {
-                                                    weekday: 'long',
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Title */}
-                            <h1 className="text-4xl font-extrabold text-gray-900 mb-6">
-                                {post.title}
-                            </h1>
-
-                            {/* Content */}
-                            <div
-                                className="post-content prose prose-lg max-w-none text-gray-700 leading-relaxed mb-8"
-                                dangerouslySetInnerHTML={{ __html: post.content }}
-                            />
-                            <style>{`
-                                .post-content a {
-                                    color: #18a9cd;
-                                    
-                                }
-                                .post-content a:hover {
-                                    color: #158BA8;
-                                    text-decoration: underline;
-                                }
-                            `}</style>
-
-                            {/* Tournament Date - Only for torneos */}
-                            {post.post_type === 'torneo' && post.tournament_date && (
-                                <div className="mb-6 p-4 bg-orange-50 border-l-4 border-orange-500 rounded">
-                                    <div className="flex items-center">
-                                        <svg className="w-6 h-6 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <div>
-                                            <div className="text-sm font-semibold text-orange-800">Fecha del Torneo</div>
-                                            <div className="text-lg font-bold text-orange-900">
-                                                {new Date(post.tournament_date).toLocaleDateString('es-ES', {
-                                                    weekday: 'long',
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Tournament Registration Form */}
-                            {post.post_type === 'torneo' && post.has_form && post.form_fields && post.form_fields.length > 0 && (() => {
-                                const isTournamentPast = post.tournament_date && new Date(post.tournament_date) < new Date();
-
-                                return (
-                                    <div className="mt-8 border-t pt-8">
-                                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Inscripción al Torneo</h2>
-
-                                        {isTournamentPast ? (
-                                            <div className="bg-gray-100 border-l-4 border-gray-400 p-6 rounded">
-                                                <div className="flex items-center">
-                                                    <svg className="w-8 h-8 text-gray-500 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                                    </svg>
-                                                    <div>
-                                                        <p className="font-bold text-gray-700 text-lg">Inscripciones cerradas</p>
-                                                        <p className="text-gray-600">El plazo para inscribirse a este torneo ha finalizado.</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : submitted ? (
-                                            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-                                                <div className="flex items-center">
-                                                    <svg className="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    <div>
-                                                        <p className="font-semibold text-green-800">¡Inscripción enviada correctamente!</p>
-                                                        <p className="text-sm text-green-700">Recibirás una confirmación en tu email.</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <form onSubmit={handleTournamentSubmit} className="space-y-4">
-                                                {post.form_fields.map((field, index) => (
-                                                    <div key={index}>
-                                                        <label className="block text-sm font-medium text-gray-700">
-                                                            {field.label}
-                                                            {field.required && <span className="text-red-500 ml-1">*</span>}
-                                                        </label>
-                                                        {renderFormField(field)}
-                                                    </div>
-                                                ))}
-
-                                                {error && (
-                                                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                                                        <p className="text-red-800">{error}</p>
-                                                    </div>
-                                                )}
-
-                                                <button
-                                                    type="submit"
-                                                    disabled={submitting}
-                                                    className="w-full px-6 py-3 bg-[#1CA9C9] text-white rounded-lg font-semibold hover:bg-[#158BA8] transition-colors duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    {submitting ? 'Enviando...' : 'Enviar Inscripción'}
-                                                </button>
-                                            </form>
-                                        )}
-                                    </div>
-                                );
-                            })()}
-                        </div>
-                    </article>
-
-                    {/* Back to Blog Button (bottom) */}
-                    <div className="mt-8 text-center">
-                        <Link
-                            href="/blog"
-                            className="inline-block px-6 py-3 bg-[#1CA9C9] text-white rounded-lg font-semibold hover:bg-[#158BA8] transition-colors duration-200 shadow-md"
-                        >
-                            Ver más noticias
-                        </Link>
+                    <div className="flex flex-wrap items-center gap-3 mb-5">
+                        <span className={`badge ${type.cls}`}><Icon name={type.icon} className="w-3 h-3" /> {type.label}</span>
+                        <time className="text-sm text-white/60">{fmtLong(post.created_at)}</time>
                     </div>
+                    <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.08]">{post.title}</h1>
                 </div>
-            </div>
-        </>
+                <svg className="absolute bottom-0 left-0 w-full h-10 text-[#FFF8E8]" viewBox="0 0 1440 48" preserveAspectRatio="none" aria-hidden="true">
+                    <path fill="currentColor" d="M0 32c120-18 240-27 360-27s240 9 360 18 240 13 360 9 240-14 360-27v43H0z" />
+                </svg>
+            </header>
+
+            <main className="max-w-3xl mx-auto px-4 sm:px-6 pb-20">
+                {/* Media */}
+                {videoId ? (
+                    <div className="-mt-6 mb-10 aspect-video rounded-3xl overflow-hidden bg-black shadow-xl">
+                        <iframe
+                            className="w-full h-full"
+                            src={`https://www.youtube.com/embed/${videoId}`}
+                            title={post.title}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        />
+                    </div>
+                ) : post.image_path ? (
+                    <img onError={(e) => (e.currentTarget.style.display = "none")} src={`/storage/${post.image_path}`} alt={post.title} className="-mt-6 mb-10 w-full max-h-[480px] object-cover rounded-3xl shadow-xl" />
+                ) : (
+                    <div className="h-8" />
+                )}
+
+                <div className="space-y-4 mb-10">
+                    {post.post_type === "evento" && post.event_date && <DateCallout label="Fecha del evento" date={post.event_date} tone="violet" />}
+                    {post.post_type === "torneo" && post.tournament_date && <DateCallout label="Fecha del torneo" date={post.tournament_date} tone="amber" />}
+                </div>
+
+                <article className="post-content" dangerouslySetInnerHTML={{ __html: post.content }} />
+
+                {/* Inscripción */}
+                {hasForm && (
+                    <section id="inscripcion" className="mt-14 bg-white rounded-3xl border border-black/5 shadow-sm p-6 sm:p-8">
+                        <h2 className="text-2xl font-black tracking-tight">Inscripción al torneo</h2>
+
+                        {isTournamentPast ? (
+                            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-gray-50 ring-1 ring-gray-200 p-5">
+                                <Icon name="lock" className="w-7 h-7 text-gray-400 shrink-0" />
+                                <div>
+                                    <p className="font-bold text-gray-800">Inscripciones cerradas</p>
+                                    <p className="text-gray-500 text-sm">El plazo para inscribirse a este torneo ha finalizado.</p>
+                                </div>
+                            </div>
+                        ) : submitted ? (
+                            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-emerald-50 ring-1 ring-emerald-200 p-5">
+                                <Icon name="check" className="w-7 h-7 text-emerald-600 shrink-0" />
+                                <div>
+                                    <p className="font-bold text-emerald-900">¡Inscripción enviada!</p>
+                                    <p className="text-emerald-800 text-sm">Recibirás una confirmación en tu email.</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="mt-6 grid gap-5">
+                                {post.form_fields.map((f, i) => (
+                                    <label key={i} className="block">
+                                        <span className="text-sm font-semibold text-gray-700">
+                                            {f.label}
+                                            {f.required && <span className="text-rose-500 ml-0.5">*</span>}
+                                        </span>
+                                        {field(f)}
+                                    </label>
+                                ))}
+                                {error && <div className="rounded-xl bg-rose-50 ring-1 ring-rose-200 text-rose-800 px-4 py-3 text-sm">{error}</div>}
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="w-full py-3.5 rounded-full bg-[#0D5C6E] hover:bg-[#127F98] text-white font-bold shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {submitting ? "Enviando…" : "Enviar inscripción"}
+                                </button>
+                            </form>
+                        )}
+                    </section>
+                )}
+
+                <div className="mt-14 pt-8 border-t border-black/10 flex justify-between items-center gap-4">
+                    <Link href="/blog" className="inline-flex items-center gap-1.5 font-bold text-[#0D5C6E] hover:text-[#1CA9C9]">
+                        <Icon name="arrowLeft" className="w-4 h-4" /> Más noticias
+                    </Link>
+                    <Link href="/liga-autonomica" className="inline-flex items-center gap-1.5 font-bold text-[#0D5C6E] hover:text-[#1CA9C9]">
+                        Ver la liga <Icon name="arrowRight" className="w-4 h-4" />
+                    </Link>
+                </div>
+            </main>
+
+            <style>{`
+                .post-content { color:#374151; font-size:1.075rem; line-height:1.8; }
+                .post-content > * + * { margin-top:1.1em; }
+                .post-content h1, .post-content h2 { font-size:1.6rem; font-weight:900; color:#111827; line-height:1.25; margin-top:1.8em; letter-spacing:-0.01em; }
+                .post-content h3 { font-size:1.25rem; font-weight:800; color:#111827; margin-top:1.6em; }
+                .post-content a { color:#0D5C6E; font-weight:600; text-decoration:underline; text-decoration-color:#1CA9C9; text-underline-offset:3px; }
+                .post-content a:hover { color:#1CA9C9; }
+                .post-content strong { color:#111827; }
+                .post-content ul { list-style:disc; padding-left:1.4em; }
+                .post-content ol { list-style:decimal; padding-left:1.4em; }
+                .post-content li + li { margin-top:.35em; }
+                .post-content li::marker { color:#1CA9C9; }
+                .post-content blockquote { border-left:4px solid #FFD369; background:#fff; padding:1em 1.25em; border-radius:0 1rem 1rem 0; font-style:italic; color:#4b5563; }
+                .post-content img { border-radius:1.25rem; max-width:100%; height:auto; }
+                .post-content iframe { width:100%; aspect-ratio:16/9; height:auto; border-radius:1.25rem; }
+                .post-content table { width:100%; border-collapse:collapse; font-size:.95rem; }
+                .post-content th, .post-content td { border-bottom:1px solid #e5e7eb; padding:.6em .75em; text-align:left; }
+                .post-content .ql-align-center { text-align:center; } .post-content .ql-align-right { text-align:right; }
+            `}</style>
+        </PageShell>
     );
 }

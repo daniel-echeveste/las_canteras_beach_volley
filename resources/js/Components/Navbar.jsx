@@ -1,104 +1,134 @@
-import React, { useState } from "react";
-import { Link } from "@inertiajs/react";
+import React, { useEffect, useState } from "react";
+import { Link, usePage } from "@inertiajs/react";
+
+// En local (localhost / .test / 127.0.0.1) o con ?developer_permissions=true
+// se muestran también las secciones en desarrollo.
+const isDevelopment = () => {
+    if (typeof window === "undefined") return false;
+    const host = window.location.hostname;
+    const hasDevPermissions = new URLSearchParams(window.location.search).get("developer_permissions") === "true";
+    return host === "localhost" || host.includes(".test") || host === "127.0.0.1" || hasDevPermissions;
+};
+
+export const NAV_LINKS = [
+    { name: "Inicio", href: "/", devOnly: true },
+    { name: "Blog", href: "/blog" },
+    { name: "Clubes", href: "/clubes-voleibol", devOnly: true },
+    { name: "Liga", href: "/liga-autonomica" },
+    { name: "Ranking", href: "/ranking" },
+    { name: "Calendario", href: "/calendario" },
+    { name: "Tienda", href: "/tienda", devOnly: true },
+    { name: "Previsión", href: "/forecast" },
+    { name: "Webcams", href: "/webcams", devOnly: true },
+    { name: "3D", href: "/webgl", devOnly: true },
+];
 
 export default function Navbar() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { url } = usePage();
+    const [open, setOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
 
-    // Check if we're in development (localhost or .test domain)
-    const urlParams = new URLSearchParams(window.location.search);
-    const hasDevPermissions = urlParams.get('developer_permissions') === 'true';
+    const links = isDevelopment() ? NAV_LINKS : NAV_LINKS.filter((l) => !l.devOnly);
+    const path = url.split("?")[0];
+    const isActive = (href) => (href === "/" ? path === "/" : path === href || path.startsWith(href + "/"));
 
-    const isDevelopment = window.location.hostname === 'localhost' ||
-        window.location.hostname.includes('.test') ||
-        window.location.hostname === '127.0.0.1' ||
-        hasDevPermissions;
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 8);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
 
-    const allNavLinks = [
-        { name: "Inicio", href: "/", devOnly: true },
-        { name: "Blog", href: "/blog", devOnly: false },
-        { name: "Clubes", href: "/clubes-voleibol", devOnly: true },
-        { name: "Liga", href: "/liga-autonomica", devOnly: false },
-        { name: "Ranking", href: "/ranking", devOnly: false },
-        { name: "Calendario", href: "/calendario", devOnly: false },
-        { name: "Tienda", href: "/tienda", devOnly: true },
-        { name: "Forecast", href: "/forecast", devOnly: false },
-        { name: "Webcams", href: "/webcams", devOnly: true },
-        { name: "3D ", href: "/webgl", devOnly: true },
-    ];
-
-    // Filter links based on environment
-    const navLinks = isDevelopment
-        ? allNavLinks
-        : allNavLinks.filter(link => !link.devOnly);
+    // Bloquear scroll con el menú móvil abierto
+    useEffect(() => {
+        document.body.style.overflow = open ? "hidden" : "";
+        return () => { document.body.style.overflow = ""; };
+    }, [open]);
 
     return (
-        <header className="bg-white/80 backdrop-blur-sm fixed w-full top-0 left-0 shadow-md z-40">
-            <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-3">
+        <header
+            className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
+                scrolled || open ? "bg-white/90 backdrop-blur-md shadow-[0_1px_0_rgba(0,0,0,0.06),0_8px_24px_-12px_rgba(0,0,0,0.15)]" : "bg-white/75 backdrop-blur-sm"
+            }`}
+        >
+            <nav className="max-w-7xl mx-auto h-20 flex items-center justify-between px-4 sm:px-6">
+                <Link href="/" className="flex items-center gap-3 shrink-0" onClick={() => setOpen(false)}>
                     <img
                         src="/logo-nobg.png"
-                        alt="Las Canteras Vóley"
-                        className="h-12 w-12 object-contain rounded-full"
-                        style={{ mixBlendMode: 'multiply' }}
+                        alt="Las Canteras Beach Volley"
+                        className="h-11 w-11 object-contain"
                     />
-                    <span className="text-2xl font-extrabold text-[#1CA9C9] hidden sm:block">
-                        Las Canteras Beach Volley
+                    <span className="leading-none hidden sm:block">
+                        <span className="block text-lg font-black tracking-tight text-[#0D5C6E]">Las Canteras</span>
+                        <span className="block text-[11px] font-bold uppercase tracking-[0.22em] text-[#1CA9C9] mt-0.5">Beach Volley</span>
                     </span>
                 </Link>
 
-                {/* Desktop Menu */}
-                <ul className="hidden xl:flex gap-6 font-semibold text-gray-700 items-center">
-                    {navLinks.map((link) => (
-                        <li key={link.name}>
-                            <Link
-                                href={link.href}
-                                className="hover:text-[#1CA9C9] transition text-sm uppercase tracking-wide"
-                            >
-                                {link.name}
-                            </Link>
-                        </li>
-                    ))}
+                {/* Escritorio */}
+                <ul className="hidden xl:flex items-center gap-1">
+                    {links.map((link) => {
+                        const active = isActive(link.href);
+                        return (
+                            <li key={link.href}>
+                                <Link
+                                    href={link.href}
+                                    className={`relative px-3.5 py-2 rounded-full text-sm font-semibold transition-colors ${
+                                        active ? "text-[#0D5C6E] bg-[#1CA9C9]/10" : "text-gray-600 hover:text-gray-900 hover:bg-black/[0.04]"
+                                    }`}
+                                >
+                                    {link.name}
+                                    {link.devOnly && <span className="ml-1 align-super text-[8px] font-bold text-amber-500">DEV</span>}
+                                </Link>
+                            </li>
+                        );
+                    })}
                 </ul>
 
-                {/* Mobile Menu Button */}
+                {/* Botón móvil */}
                 <button
-                    className="xl:hidden text-gray-700 focus:outline-none"
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="xl:hidden w-11 h-11 -mr-2 rounded-full flex items-center justify-center text-gray-800 hover:bg-black/5"
+                    onClick={() => setOpen((o) => !o)}
+                    aria-label={open ? "Cerrar menú" : "Abrir menú"}
+                    aria-expanded={open}
                 >
-                    <svg
-                        className="w-8 h-8"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
-                        ></path>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        {open ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h16M4 17h10" />
+                        )}
                     </svg>
                 </button>
             </nav>
 
-            {/* Mobile Menu Dropdown */}
-            {isMobileMenuOpen && (
-                <div className="xl:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full left-0 top-full">
-                    <ul className="flex flex-col p-4 gap-4 font-semibold text-gray-700">
-                        {navLinks.map((link) => (
-                            <li key={link.name}>
-                                <Link
-                                    href={link.href}
-                                    className="block hover:text-[#1CA9C9] transition"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    {link.name}
-                                </Link>
-                            </li>
-                        ))}
+            {/* Menú móvil */}
+            {open && (
+                <div className="xl:hidden fixed inset-x-0 top-20 bottom-0 bg-white/95 backdrop-blur-md border-t border-black/5 overflow-y-auto animate-[menu-in_.2s_ease-out]">
+                    <ul className="max-w-7xl mx-auto px-4 sm:px-6 py-4 grid gap-1">
+                        {links.map((link) => {
+                            const active = isActive(link.href);
+                            return (
+                                <li key={link.href}>
+                                    <Link
+                                        href={link.href}
+                                        onClick={() => setOpen(false)}
+                                        className={`flex items-center justify-between px-4 py-3.5 rounded-2xl text-lg font-bold ${
+                                            active ? "bg-[#1CA9C9]/10 text-[#0D5C6E]" : "text-gray-800 hover:bg-black/[0.04]"
+                                        }`}
+                                    >
+                                        <span>
+                                            {link.name}
+                                            {link.devOnly && <span className="ml-2 text-[10px] font-bold text-amber-500 align-middle">DEV</span>}
+                                        </span>
+                                        <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </Link>
+                                </li>
+                            );
+                        })}
                     </ul>
+                    <style>{`@keyframes menu-in { from { opacity:0; transform:translateY(-6px) } to { opacity:1; transform:none } }`}</style>
                 </div>
             )}
         </header>

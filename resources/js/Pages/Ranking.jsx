@@ -1,347 +1,154 @@
-import React, { useState } from "react";
-import { Head } from "@inertiajs/react";
-import Navbar from "@/Components/Navbar";
+import React, { useMemo, useState } from "react";
+import { PageShell, PageHero, Segmented, SearchInput, Modal, Spinner, EmptyState, Icon, RFEVB_TABLE_CSS } from "@/Components/ui";
 
-export default function Ranking({ rankingMasculino, rankingFemenino }) {
-    const [searchTerm, setSearchTerm] = useState("");
+const PAGE = 100;
+
+// "PEREZ SUAREZ, PABLO JOSE" -> { surname: "Pérez Suárez"..., name: "Pablo José" } (solo capitalización)
+const titleCase = (s) => s.toLowerCase().replace(/(^|[\s-])(\p{L})/gu, (m, p, c) => p + c.toUpperCase());
+const splitName = (full = "") => {
+    const [surname, name] = full.split(",").map((x) => x.trim());
+    return { surname: titleCase(surname || full), name: name ? titleCase(name) : "" };
+};
+const initials = (full) => {
+    const { surname, name } = splitName(full);
+    return ((name[0] || "") + (surname[0] || "")).toUpperCase();
+};
+
+const normalize = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+export default function Ranking({ rankingMasculino = [], rankingFemenino = [] }) {
     const [gender, setGender] = useState("masculino");
-    const [modalOpen, setModalOpen] = useState(false);
-    const [modalContent, setModalContent] = useState("");
-    const [modalLoading, setModalLoading] = useState(false);
-    const [selectedPlayer, setSelectedPlayer] = useState("");
+    const [search, setSearch] = useState("");
+    const [limit, setLimit] = useState(PAGE);
+    const [modal, setModal] = useState(null); // { player, html, loading }
 
-    const ranking = gender === "masculino " ? rankingMasculino : rankingFemenino;
+    const ranking = gender === "masculino" ? rankingMasculino : rankingFemenino;
 
-    // Filter ranking based on search term while preserving original rank
-    const filteredRanking = ranking.filter(item =>
-        item.player.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filtered = useMemo(() => {
+        if (!search) return ranking;
+        const q = normalize(search);
+        return ranking.filter((r) => normalize(r.player).includes(q));
+    }, [ranking, search]);
 
-    const openTorneosModal = async (idPersona, playerName) => {
-        setSelectedPlayer(playerName);
-        setModalOpen(true);
-        setModalLoading(true);
-        setModalContent("");
+    const changeGender = (g) => {
+        setGender(g);
+        setLimit(PAGE);
+    };
 
+    const openPlayer = async (p) => {
+        setModal({ player: p, html: "", loading: true });
         try {
-            const response = await fetch(`/ranking/torneos/${idPersona}`);
-            const data = await response.json();
-
-            if (data.success) {
-                setModalContent(data.html);
-            } else {
-                setModalContent("<p>No se pudieron cargar los torneos.</p>");
-            }
-        } catch (error) {
-            setModalContent("<p>Error al cargar los torneos.</p>");
-        } finally {
-            setModalLoading(false);
+            const res = await fetch(`/ranking/torneos/${p.idPersona}`);
+            const data = await res.json();
+            setModal({ player: p, loading: false, html: data.success ? data.html : "<p>No se pudieron cargar los torneos.</p>" });
+        } catch {
+            setModal({ player: p, loading: false, html: "<p>Error al cargar los torneos.</p>" });
         }
     };
 
-    const closeModal = () => {
-        setModalOpen(false);
-        setModalContent("");
-        setSelectedPlayer("");
-    };
+    const visible = filtered.slice(0, limit);
 
     return (
-        <>
-            <Head title="Ranking Nacional - Las Canteras Vóley" />
-            <div className="min-h-screen bg-[#FFF8E8] text-gray-900 font-sans">
-                <Navbar />
-                <div className="pt-24 max-w-5xl mx-auto px-6 pb-12">
-                    <h1 className="text-4xl font-extrabold text-[#1CA9C9] mb-6">
-                        Ranking Nacional {gender === "masculino" ? "Masculino" : "Femenino"}
-                    </h1>
-                    <p className="text-lg text-gray-700 mb-8">
-                        Clasificación actualizada de la Real Federación Española de Voleibol.
-                    </p>
+        <PageShell title="Ranking Nacional - Las Canteras Beach Volley">
+            <PageHero
+                compact
+                eyebrow="RFEVB · Vóley playa"
+                title="Ranking nacional"
+                subtitle="Clasificación oficial de la Real Federación Española de Voleibol, actualizada a día de hoy."
+                aside={
+                    <Segmented
+                        dark
+                        value={gender}
+                        onChange={changeGender}
+                        options={[
+                            { value: "masculino", label: "Masculino" },
+                            { value: "femenino", label: "Femenino" },
+                        ]}
+                    />
+                }
+            />
 
-                    {/* Gender Switch */}
-                    <div className="mb-6 inline-flex rounded-lg border border-gray-300 bg-white p-1 shadow-sm">
-                        <button
-                            onClick={() => setGender("masculino")}
-                            className={`px-5 py-2 text-sm font-semibold rounded-md transition-colors duration-200 ${
-                                gender === "masculino"
-                                    ? "bg-[#1CA9C9] text-white shadow"
-                                    : "text-gray-600 hover:text-gray-900"
-                            }`}
-                        >
-                            Masculino
-                        </button>
-                        <button
-                            onClick={() => setGender("femenino")}
-                            className={`px-5 py-2 text-sm font-semibold rounded-md transition-colors duration-200 ${
-                                gender === "femenino"
-                                    ? "bg-[#1CA9C9] text-white shadow"
-                                    : "text-gray-600 hover:text-gray-900"
-                            }`}
-                        >
-                            Femenino
-                        </button>
-                    </div>
+            <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+                {ranking.length === 0 ? (
+                    <EmptyState icon="chart" title="Ranking no disponible">
+                        No hemos podido cargar el ranking de la RFEVB. Vuelve a intentarlo en un rato.
+                    </EmptyState>
+                ) : (
+                    <>
 
-                    {/* Search Input */}
-                    <div className="mb-6">
-                        <input
-                            type="text"
-                            placeholder="Buscar por nombre..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1CA9C9] focus:border-transparent"
-                        />
-                    </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                            <SearchInput value={search} onChange={(v) => { setSearch(v); setLimit(PAGE); }} placeholder="Buscar jugador/a…" className="flex-1" />
+                            <span className="text-sm text-gray-500 sm:text-right shrink-0">
+                                {filtered.length.toLocaleString("es-ES")} {filtered.length === 1 ? "jugador/a" : "jugadores"}
+                            </span>
+                        </div>
 
-                    {/* Mobile Cards View */}
-                    <div className="md:hidden space-y-3">
-                        {filteredRanking.length > 0 ? (
-                            filteredRanking.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="bg-white rounded-lg shadow-md p-4 border-l-4 border-[#1CA9C9]"
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <span className="flex items-center justify-center w-10 h-10 bg-[#1CA9C9] text-white font-bold rounded-full text-sm">
-                                                {item.rank}
-                                            </span>
-                                            <div>
-                                                <p className="font-semibold text-gray-900 text-sm leading-tight">
-                                                    {item.player}
-                                                </p>
-                                                <p className="text-[#1CA9C9] font-bold text-lg mt-1">
-                                                    {item.points} pts
-                                                </p>
-                                            </div>
-                                        </div>
-                                        {item.idPersona && (
-                                            <button
-                                                onClick={() => openTorneosModal(item.idPersona, item.player)}
-                                                className="px-3 py-2 bg-[#1CA9C9] text-white text-xs font-semibold rounded-lg hover:bg-[#168a9c] transition-colors duration-200 shadow-sm flex-shrink-0"
-                                            >
-                                                Torneos
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))
+                        {filtered.length === 0 ? (
+                            <EmptyState icon="search" title="Sin resultados">No hay nadie que coincida con «{search}».</EmptyState>
                         ) : (
-                            <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
-                                No se encontraron resultados.
+                            <div className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">
+                                <ol className="divide-y divide-gray-100">
+                                    {visible.map((p) => {
+                                        const { surname, name } = splitName(p.player);
+                                        return (
+                                            <li key={`${p.rank}-${p.idPersona}`}>
+                                                <button
+                                                    onClick={() => p.idPersona && openPlayer(p)}
+                                                    disabled={!p.idPersona}
+                                                    className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-3.5 text-left hover:bg-[#1CA9C9]/[0.04] transition-colors group"
+                                                >
+                                                    <span className={`w-9 text-center tabular-nums font-extrabold ${p.rank <= 3 ? "text-[#0D5C6E]" : "text-gray-400"} text-sm`}>
+                                                        {p.rank}
+                                                    </span>
+                                                    <span className="hidden sm:flex w-9 h-9 rounded-full bg-[#E6F6FA] text-[#0D5C6E] text-xs font-bold items-center justify-center shrink-0">
+                                                        {initials(p.player)}
+                                                    </span>
+                                                    <span className="flex-1 min-w-0">
+                                                        <span className="block font-bold text-gray-900 truncate group-hover:text-[#0D5C6E]">{name || surname}</span>
+                                                        {name && <span className="block text-sm text-gray-500 truncate">{surname}</span>}
+                                                    </span>
+                                                    <span className="text-right">
+                                                        <span className="block font-black tabular-nums text-gray-900">{p.points}</span>
+                                                        <span className="block text-[10px] font-bold uppercase tracking-wider text-gray-400">puntos</span>
+                                                    </span>
+                                                    {p.idPersona && <Icon name="arrow" className="w-4 h-4 text-gray-300 group-hover:text-[#1CA9C9] shrink-0" />}
+                                                </button>
+                                            </li>
+                                        );
+                                    })}
+                                </ol>
+                                {filtered.length > limit && (
+                                    <button
+                                        onClick={() => setLimit((l) => l + PAGE)}
+                                        className="w-full py-4 border-t border-gray-100 text-sm font-bold text-[#0D5C6E] hover:bg-gray-50"
+                                    >
+                                        Mostrar más ({(filtered.length - limit).toLocaleString("es-ES")} restantes)
+                                    </button>
+                                )}
                             </div>
                         )}
-                    </div>
+                    </>
+                )}
 
-                    {/* Desktop Table View */}
-                    <div className="hidden md:block overflow-x-auto shadow-md sm:rounded-lg bg-white">
-                        <table className="w-full text-sm text-left text-gray-500">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3">Posición</th>
-                                    <th scope="col" className="px-6 py-3">Apellidos / Nombre</th>
-                                    <th scope="col" className="px-6 py-3">Puntos</th>
-                                    <th scope="col" className="px-6 py-3 text-center"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredRanking.length > 0 ? (
-                                    filteredRanking.map((item, index) => (
-                                        <tr key={index} className="bg-white border-b hover:bg-gray-50">
-                                            <td className="px-6 py-4 font-bold text-gray-900 whitespace-nowrap">
-                                                {item.rank}
-                                            </td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">
-                                                {item.player}
-                                            </td>
-                                            <td className="px-6 py-4 text-[#1CA9C9] font-bold">
-                                                {item.points}
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                {item.idPersona && (
-                                                    <button
-                                                        onClick={() => openTorneosModal(item.idPersona, item.player)}
-                                                        className="px-4 py-2 bg-[#1CA9C9] text-white text-xs font-semibold rounded-lg hover:bg-[#168a9c] transition-colors duration-200 shadow-sm"
-                                                    >
-                                                        Torneos
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="4" className="px-6 py-4 text-center">
-                                            No se encontraron resultados.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                <p className="mt-10 text-center text-xs text-gray-500">
+                    Fuente:{" "}
+                    <a href={`https://www.rfevb.com/ranking-voley-playa-${gender}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-[#0D5C6E] hover:underline">
+                        RFEVB
+                    </a>{" "}
+                    · Pulsa un jugador/a para ver sus torneos
+                </p>
+            </main>
 
-                    <div className="mt-8 text-sm text-gray-500 text-center">
-                        Fuente: <a href={`https://www.rfevb.com/ranking-voley-playa-${gender}`} target="_blank" rel="noopener noreferrer" className="text-[#1CA9C9] hover:underline">RFEVB</a>
-                    </div>
-                </div>
-            </div>
+            <Modal
+                open={!!modal}
+                onClose={() => setModal(null)}
+                subtitle={modal ? `#${modal.player.rank} · ${modal.player.points} puntos` : ""}
+                title={modal ? (() => { const { name, surname } = splitName(modal.player.player); return `${name} ${surname}`.trim(); })() : ""}
+            >
+                {modal?.loading ? <Spinner label="Cargando torneos…" /> : <div className="rfevb-html" dangerouslySetInnerHTML={{ __html: modal?.html || "" }} />}
+            </Modal>
 
-            {/* Modal */}
-            {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    {/* Backdrop */}
-                    <div
-                        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
-                        onClick={closeModal}
-                    ></div>
-
-                    {/* Modal Content */}
-                    <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-                        {/* Header */}
-                        <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-[#1CA9C9] to-[#168a9c]">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-xl font-bold text-white">
-                                    Torneos - {selectedPlayer}
-                                </h3>
-                                <button
-                                    onClick={closeModal}
-                                    className="text-white hover:text-gray-200 transition-colors"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Body */}
-                        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                            {modalLoading ? (
-                                <div className="flex items-center justify-center py-12">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1CA9C9]"></div>
-                                    <span className="ml-4 text-gray-600">Cargando torneos...</span>
-                                </div>
-                            ) : (
-                                <div
-                                    className="torneos-content prose max-w-none"
-                                    dangerouslySetInnerHTML={{ __html: modalContent }}
-                                />
-                            )}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end">
-                            <button
-                                onClick={closeModal}
-                                className="px-6 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors duration-200"
-                            >
-                                Cerrar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Styles for tournament content */}
-            <style>{`
-                /* Desktop styles */
-                .torneos-content table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin: 1rem 0;
-                }
-                .torneos-content th,
-                .torneos-content td {
-                    padding: 0.75rem;
-                    border: 1px solid #e5e7eb;
-                    text-align: left;
-                }
-                .torneos-content th {
-                    background-color: #f9fafb;
-                    font-weight: 600;
-                }
-                .torneos-content tr:hover {
-                    background-color: #f3f4f6;
-                }
-                .torneos-content a {
-                    color: #1CA9C9;
-                    text-decoration: underline;
-                }
-
-                /* Mobile card styles for tournament table */
-                @media (max-width: 767px) {
-                    .torneos-content table {
-                        border: none;
-                    }
-                    .torneos-content thead {
-                        display: none;
-                    }
-                    .torneos-content tbody tr {
-                        display: flex;
-                        flex-wrap: wrap;
-                        align-items: center;
-                        background: white;
-                        border: 1px solid #e5e7eb;
-                        border-left: 3px solid #1CA9C9;
-                        border-radius: 6px;
-                        margin-bottom: 8px;
-                        padding: 10px 12px;
-                        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-                    }
-                    .torneos-content td {
-                        border: none;
-                        padding: 0;
-                        font-size: 13px;
-                    }
-                    /* Hide all columns by default */
-                    .torneos-content td {
-                        display: none;
-                    }
-                    /* Show 1st column (tournament name) - full width as title */
-                    .torneos-content td:nth-child(3) {
-                        display: block;
-                        width: 100%;
-                        font-weight: 600;
-                        font-size: 16px;
-                        color: #1f2937;
-                        line-height: 1.3;
-                    }
-                    /* Show 2nd column (date) - inline */
-                    .torneos-content td:nth-child(2) {
-                        display: inline-block;
-                        color: #6b7280;
-                        font-size: 12px;
-                        margin-right: 12px;
-                    }
-                    .torneos-content td:nth-child(2):before {
-                        content: "📅 ";
-                    }
-                    /* Show last column (points) - inline, highlighted */
-                    .torneos-content td:last-child {
-                        display: inline-block;
-                        color: #1CA9C9;
-                        font-weight: 700;
-                        font-size: 13px;
-                    }
-                    .torneos-content td:nth-child(6) {
-                        display: inline-block;
-                        color: #1CA9C9;
-                        font-weight: 700;
-                        font-size: 13px;
-                        margin-right: 12px;
-                       
-                    }
-                     .torneos-content td:nth-child(6):before {
-                        content: "Position: ";
-                       
-                    }
-
-                    .torneos-content td:last-child:before {
-                        content: "Pts: ";
-                    }
-                }
-            `}</style>
-        </>
+            <style>{RFEVB_TABLE_CSS("rfevb-html")}</style>
+        </PageShell>
     );
 }
-

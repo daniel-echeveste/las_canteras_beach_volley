@@ -1,372 +1,296 @@
-import React, { useState, useEffect } from 'react';
-import { Head } from '@inertiajs/react';
-import Navbar from '@/Components/Navbar';
+import React, { useEffect, useMemo, useState } from "react";
+import { PageShell, PageHero, Spinner, EmptyState, Icon } from "@/Components/ui";
+
+const API =
+    "https://api.open-meteo.com/v1/forecast?latitude=28.128&longitude=-15.433" +
+    "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,uv_index" +
+    "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,uv_index,is_day,precipitation_probability" +
+    "&daily=weather_code,sunrise,sunset,uv_index_max,precipitation_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min" +
+    "&timezone=Atlantic%2FCanary";
+
+const weatherIcon = (code, isDay = 1) => {
+    if (code === 0) return isDay ? "☀️" : "🌙";
+    if (code <= 2) return isDay ? "🌤️" : "☁️";
+    if (code === 3) return "☁️";
+    if (code <= 48) return "🌫️";
+    if (code <= 67) return "🌧️";
+    if (code <= 77) return "❄️";
+    if (code <= 82) return "🌦️";
+    return "⛈️";
+};
+
+const DESCRIPTIONS = {
+    0: "Despejado", 1: "Mayormente despejado", 2: "Parcialmente nublado", 3: "Nublado",
+    45: "Niebla", 48: "Niebla", 51: "Llovizna ligera", 53: "Llovizna", 55: "Llovizna intensa",
+    61: "Lluvia ligera", 63: "Lluvia", 65: "Lluvia fuerte", 80: "Chubascos", 81: "Chubascos", 82: "Chubascos fuertes", 95: "Tormenta",
+};
+
+const DIRS = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"];
+const windDir = (deg) => DIRS[Math.round(deg / 45) % 8];
+
+const hhmm = (iso) => iso.slice(11, 16);
+const dayLabel = (iso, opts) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Intl.DateTimeFormat("es-ES", opts).format(new Date(y, m - 1, d)).replace(/\./g, "");
+};
+
+const uvLevel = (uv) => {
+    if (uv < 3) return { label: "Bajo", cls: "text-emerald-600" };
+    if (uv < 6) return { label: "Moderado", cls: "text-amber-500" };
+    if (uv < 8) return { label: "Alto", cls: "text-orange-500" };
+    return { label: "Muy alto", cls: "text-rose-600" };
+};
+
+// ¿Buen momento para jugar? Viento, lluvia y luz
+const verdict = ({ wind, rain, isDay, code }) => {
+    if (!isDay) return { label: "Es de noche", text: "Vuelve mañana con luz.", tone: "slate" };
+    if (rain || (code >= 61 && code <= 99)) return { label: "Mejor otro día", text: "Se espera lluvia.", tone: "rose" };
+    if (wind >= 30) return { label: "Mucho viento", text: "Rachas difíciles para jugar.", tone: "rose" };
+    if (wind >= 18) return { label: "Jugable", text: "Algo de viento: saques cortos y mucho control.", tone: "amber" };
+    return { label: "Día ideal", text: "Poco viento y buen tiempo. ¡A la arena!", tone: "emerald" };
+};
+
+const TONES = {
+    emerald: "bg-emerald-400/20 text-emerald-50 ring-emerald-300/40",
+    amber: "bg-amber-300/20 text-amber-50 ring-amber-200/40",
+    rose: "bg-rose-400/20 text-rose-50 ring-rose-300/40",
+    slate: "bg-white/10 text-white ring-white/20",
+};
+
+function Metric({ icon, label, value, unit, sub, subCls = "text-gray-500", children }) {
+    return (
+        <div className="rounded-2xl bg-white border border-black/5 p-4 sm:p-5">
+            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                <Icon name={icon} className="w-4 h-4 text-[#1CA9C9]" /> {label}
+            </div>
+            <div className="mt-2 flex items-end gap-1.5">
+                <span className="text-3xl font-black tabular-nums">{value}</span>
+                {unit && <span className="text-sm text-gray-400 font-semibold mb-1">{unit}</span>}
+                {children}
+            </div>
+            {sub && <div className={`mt-0.5 text-sm font-semibold ${subCls}`}>{sub}</div>}
+        </div>
+    );
+}
+
+function WindArrow({ deg, className = "w-5 h-5" }) {
+    // La API indica de dónde viene el viento; la flecha apunta hacia dónde va.
+    return (
+        <svg className={className} viewBox="0 0 24 24" style={{ transform: `rotate(${deg + 180}deg)` }} aria-hidden="true">
+            <path d="M12 3l5 9h-4v9h-2v-9H7z" fill="currentColor" />
+        </svg>
+    );
+}
 
 export default function Forecast() {
-    const [weatherData, setWeatherData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-    const [selectedHour, setSelectedHour] = useState(null); // null means "current" or "daily summary" if not today
+    const [data, setData] = useState(null);
+    const [error, setError] = useState(false);
+    const [day, setDay] = useState(0);
+    const [hour, setHour] = useState(null);
 
     useEffect(() => {
-        const fetchWeather = async () => {
-            try {
-                // Las Canteras coordinates: 28.128, -15.433
-                const response = await fetch(
-                    'https://api.open-meteo.com/v1/forecast?latitude=28.128&longitude=-15.433&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,uv_index&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,uv_index,is_day&daily=weather_code,sunrise,sunset,uv_index_max,precipitation_sum,wind_speed_10m_max&timezone=auto'
-                );
-                const data = await response.json();
-                setWeatherData(data);
-            } catch (error) {
-                console.error("Error fetching weather data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchWeather();
+        fetch(API)
+            .then((r) => r.json())
+            .then(setData)
+            .catch(() => setError(true));
     }, []);
 
-    const getWeatherIcon = (code) => {
-        if (code === 0) return "☀️";
-        if (code >= 1 && code <= 3) return "⛅";
-        if (code >= 45 && code <= 48) return "🌫️";
-        if (code >= 51 && code <= 55) return "🌧️";
-        if (code >= 61 && code <= 67) return "🌧️";
-        if (code >= 71 && code <= 77) return "❄️";
-        if (code >= 80 && code <= 82) return "🌦️";
-        if (code >= 95 && code <= 99) return "⛈️";
-        return "❓";
-    };
+    const hours = useMemo(() => {
+        if (!data) return [];
+        const date = data.daily.time[day];
+        return data.hourly.time
+            .map((t, i) => ({ t, i }))
+            .filter(({ t }) => t.startsWith(date) && +t.slice(11, 13) >= 7 && +t.slice(11, 13) <= 21);
+    }, [data, day]);
 
-    const getWeatherDescription = (code) => {
-        const codes = {
-            0: "Despejado", 1: "Mayormente despejado", 2: "Parcialmente nublado", 3: "Nublado",
-            45: "Niebla", 48: "Niebla con escarcha", 51: "Llovizna ligera", 53: "Llovizna moderada",
-            55: "Llovizna densa", 61: "Lluvia ligera", 63: "Lluvia moderada", 65: "Lluvia fuerte",
-            80: "Chubascos ligeros", 81: "Chubascos moderados", 82: "Chubascos violentos", 95: "Tormenta",
-        };
-        return codes[code] || "Desconocido";
-    };
-
-    const getWindDirection = (degrees) => {
-        const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-        return directions[Math.round(degrees / 45) % 8];
-    };
-
-    const getWindStatus = (speed) => {
-        if (speed < 15) return { label: "Leve", color: "text-green-500", icon: "😌", bg: "bg-green-50" };
-        if (speed < 30) return { label: "Moderado", color: "text-blue-500", icon: "😐", bg: "bg-blue-50" };
-        return { label: "Fuerte", color: "text-red-500", icon: "😵", bg: "bg-red-50" };
-    };
-
-    const getUVStatus = (index) => {
-        if (index < 2) return { color: "text-green-500", warning: null, bg: "bg-green-50" };
-        if (index < 5) return { color: "text-yellow-500", warning: null, bg: "bg-yellow-50" };
-        if (index < 7) return { color: "text-orange-500", warning: "¡Ponte crema!", bg: "bg-orange-50" };
-        return { color: "text-red-500", warning: "¡Ponte crema!", bg: "bg-red-50" };
-    };
-
-    const formatTime = (isoString) => {
-        return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
-
-    // Helper to get the data to display based on selection
-    const getDisplayData = () => {
-        if (!weatherData) return null;
-
-        // If a specific hour is selected
-        if (selectedHour) {
-            const index = weatherData.hourly.time.indexOf(selectedHour);
-            if (index !== -1) {
-                return {
-                    type: 'hourly',
-                    timeLabel: `${new Date(selectedHour).toLocaleDateString('es-ES', { weekday: 'long' })} ${formatTime(selectedHour)}`,
-                    temp: weatherData.hourly.temperature_2m[index],
-                    code: weatherData.hourly.weather_code[index],
-                    windSpeed: weatherData.hourly.wind_speed_10m[index],
-                    windDir: weatherData.hourly.wind_direction_10m[index] || 0, // Add fallback
-                    uv: weatherData.hourly.uv_index[index],
-                    isDay: weatherData.hourly.is_day[index],
-                    sunInfo: null // Hourly doesn't really have sun hours left logic same as current
-                };
-            }
-        }
-
-        // If today and no specific hour selected -> Show Current
-        const isToday = selectedDayIndex === 0;
-        if (isToday) {
+    const display = useMemo(() => {
+        if (!data) return null;
+        const h = data.hourly;
+        if (hour !== null) {
             return {
-                type: 'current',
-                timeLabel: "Ahora mismo",
-                temp: weatherData.current.temperature_2m,
-                code: weatherData.current.weather_code,
-                windSpeed: weatherData.current.wind_speed_10m,
-                windDir: weatherData.current.wind_direction_10m,
-                uv: weatherData.daily.uv_index_max[0], // Use max UV for today as reference or current? API has current UV.
-                // Let's use current UV if available in current object, otherwise daily max
-                // API call requested current=uv_index, so it should be there.
-                uv: weatherData.current.uv_index,
-                isDay: weatherData.current.is_day,
-                sunInfo: calculateSunHoursLeft(new Date())
+                label: `${dayLabel(data.daily.time[day], { weekday: "long" })}, ${hhmm(h.time[hour])}`,
+                temp: h.temperature_2m[hour], code: h.weather_code[hour], wind: h.wind_speed_10m[hour],
+                dir: h.wind_direction_10m[hour], uv: h.uv_index[hour], isDay: h.is_day[hour],
+                rain: (h.precipitation_probability?.[hour] ?? 0) >= 60,
             };
         }
-
-        // If future day and no hour selected -> Show Daily Summary (using noon or max values)
-        const dayDate = weatherData.daily.time[selectedDayIndex];
+        if (day === 0) {
+            const c = data.current;
+            return {
+                label: "Ahora mismo", temp: c.temperature_2m, feels: c.apparent_temperature, code: c.weather_code,
+                wind: c.wind_speed_10m, dir: c.wind_direction_10m, uv: c.uv_index, isDay: c.is_day,
+                humidity: c.relative_humidity_2m, rain: c.precipitation > 0.2,
+            };
+        }
+        const d = data.daily;
         return {
-            type: 'daily',
-            timeLabel: new Date(dayDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }),
-            temp: null, // Daily doesn't have a single temp, maybe show range?
-            // Let's find the max temp for that day from hourly or daily API
-            // The API call didn't request daily max temp, but we have hourly.
-            // Let's just grab 12:00 PM for that day as a representative or just show "Ver por horas"
-            // Better: Use the daily weather code.
-            code: weatherData.daily.weather_code[selectedDayIndex],
-            windSpeed: weatherData.daily.wind_speed_10m_max[selectedDayIndex],
-            windDir: null, // Daily max wind doesn't have a single direction
-            uv: weatherData.daily.uv_index_max[selectedDayIndex],
-            isDay: 1,
-            sunInfo: `Amanecer: ${formatTime(weatherData.daily.sunrise[selectedDayIndex])} - Puesta: ${formatTime(weatherData.daily.sunset[selectedDayIndex])}`
+            label: dayLabel(d.time[day], { weekday: "long", day: "numeric", month: "long" }),
+            temp: d.temperature_2m_max[day], min: d.temperature_2m_min[day], code: d.weather_code[day],
+            wind: d.wind_speed_10m_max[day], dir: null, uv: d.uv_index_max[day], isDay: 1,
+            rain: d.precipitation_sum[day] > 1,
         };
+    }, [data, day, hour]);
+
+    const sun = data && {
+        rise: hhmm(data.daily.sunrise[day]),
+        set: hhmm(data.daily.sunset[day]),
     };
 
-    const calculateSunHoursLeft = (now) => {
-        if (!weatherData || !weatherData.daily) return "";
-        const sunset = new Date(weatherData.daily.sunset[0]);
-        const sunrise = new Date(weatherData.daily.sunrise[0]);
+    const sunLeft = useMemo(() => {
+        if (!data || day !== 0 || hour !== null) return null;
+        const now = new Date();
+        const set = new Date(data.daily.sunset[0]);
+        const rise = new Date(data.daily.sunrise[0]);
+        if (now > set) return "Ya anocheció";
+        if (now < rise) return "Aún no ha amanecido";
+        const ms = set - now;
+        return `${Math.floor(ms / 3.6e6)} h ${Math.floor((ms % 3.6e6) / 6e4)} min de sol`;
+    }, [data, day, hour]);
 
-        if (now > sunset) return "Anocheció";
-        if (now < sunrise) return "Amanece pronto";
-
-        const diffMs = sunset - now;
-        const hours = Math.floor(diffMs / (1000 * 60 * 60));
-        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        return `${hours}h ${minutes}m de sol`;
-    };
-
-    const displayData = getDisplayData();
+    const v = display && verdict(display);
+    const maxWind = hours.length ? Math.max(...hours.map(({ i }) => data.hourly.wind_speed_10m[i]), 30) : 30;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Head title="Previsión Meteorológica" />
-            <Navbar />
-
-            <main className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
-                <div className="mb-6 text-center">
-                    <h1 className="text-3xl font-extrabold text-gray-900">
-                        Previsión <span className="text-[#1CA9C9]">Las Canteras</span>
-                    </h1>
-                </div>
-
-                {loading || !displayData ? (
-                    <div className="flex justify-center items-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1CA9C9]"></div>
-                    </div>
-                ) : (
-                    <div className="space-y-8">
-                        {/* Unified Main Card */}
-                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 relative">
-                            {/* Card Header / Background */}
-                            <div className={`p-8 text-center relative overflow-hidden ${displayData.isDay ? 'bg-gradient-to-b from-blue-400 to-blue-200' : 'bg-gradient-to-b from-indigo-900 to-purple-800'}`}>
-                                <div className="relative z-10">
-                                    <h2 className="text-white/90 font-medium text-lg uppercase tracking-wider mb-2">
-                                        {displayData.timeLabel}
-                                    </h2>
-                                    <div className="text-8xl mb-2 filter drop-shadow-lg animate-bounce-slow">
-                                        {getWeatherIcon(displayData.code)}
-                                    </div>
-                                    {displayData.temp !== null && (
-                                        <div className="text-6xl font-bold text-white drop-shadow-md">
-                                            {Math.round(displayData.temp)}°
-                                        </div>
-                                    )}
-                                    <p className="text-white/90 text-xl font-medium mt-2">
-                                        {getWeatherDescription(displayData.code)}
-                                    </p>
+        <PageShell title="Previsión del tiempo - Las Canteras Beach Volley">
+            <PageHero
+                compact
+                eyebrow="Playa de Las Canteras"
+                title="¿Hace día de playa?"
+                subtitle="Viento, índice UV y horas de sol en Las Canteras para los próximos 7 días."
+            >
+                {display && (
+                    <div className="mt-8 grid md:grid-cols-[1fr_auto] gap-4 items-stretch">
+                        <div className="rounded-3xl bg-white/10 ring-1 ring-white/15 backdrop-blur p-5 sm:p-6 flex items-center gap-5">
+                            <span className="text-6xl sm:text-7xl leading-none drop-shadow">{weatherIcon(display.code, display.isDay)}</span>
+                            <div className="min-w-0">
+                                <div className="text-white/60 text-xs font-bold uppercase tracking-wider">{display.label}</div>
+                                <div className="text-white text-5xl sm:text-6xl font-black tabular-nums leading-none mt-1">
+                                    {Math.round(display.temp)}°
+                                    {display.min !== undefined && <span className="text-2xl text-white/50 font-bold ml-2">/ {Math.round(display.min)}°</span>}
                                 </div>
-
-                                {/* Decorative circles */}
-                                <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
-                                <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full translate-x-1/2 translate-y-1/2 blur-2xl"></div>
-                            </div>
-
-                            {/* Card Details Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
-                                {/* Wind Section */}
-                                <div className={`p-6 flex flex-col items-center justify-center transition-colors ${getWindStatus(displayData.windSpeed).bg}`}>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <span className={`text-3xl ${getWindStatus(displayData.windSpeed).color}`}>
-                                            {getWindStatus(displayData.windSpeed).icon}
-                                        </span>
-                                        <span className="text-gray-500 font-medium uppercase text-xs tracking-wider">Viento</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-2xl font-bold ${getWindStatus(displayData.windSpeed).color}`}>
-                                            {displayData.windSpeed} <span className="text-sm text-gray-400 font-normal">km/h</span>
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2 mt-2">
-                                        {displayData.windDir !== null && (
-                                            <div
-                                                className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center"
-                                                style={{ transform: `rotate(${displayData.windDir - 180}deg)` }}
-                                                title={`Dirección: ${displayData.windDir - 180}°`}
-                                            >
-                                                <svg className="w-4 h-4 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                                </svg>
-                                            </div>
-                                        )}
-                                        <span className={`font-bold ${getWindStatus(displayData.windSpeed).color}`}>
-                                            {getWindStatus(displayData.windSpeed).label}
-                                        </span>
-                                        {displayData.windDir !== null && (
-                                            <span className="text-gray-400 text-sm">
-                                                {getWindDirection(displayData.windDir)}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* UV Section */}
-                                <div className={`p-6 flex flex-col items-center justify-center transition-colors ${getUVStatus(displayData.uv).bg}`}>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <svg className={`w-6 h-6 ${getUVStatus(displayData.uv).color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                                        </svg>
-                                        <span className="text-gray-500 font-medium uppercase text-xs tracking-wider">Índice UV</span>
-                                    </div>
-                                    <span className={`text-3xl font-bold ${getUVStatus(displayData.uv).color}`}>
-                                        {displayData.uv}
-                                    </span>
-                                    {getUVStatus(displayData.uv).warning && (
-                                        <span className="mt-2 px-3 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-full animate-pulse">
-                                            {getUVStatus(displayData.uv).warning}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Sun/Extra Section */}
-                                <div className="p-6 flex flex-col items-center justify-center bg-yellow-50/50">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span className="text-gray-500 font-medium uppercase text-xs tracking-wider">Sol</span>
-                                    </div>
-                                    <span className="text-lg font-bold text-gray-800 text-center">
-                                        {displayData.sunInfo || "---"}
-                                    </span>
+                                <div className="text-white/80 font-semibold mt-1">
+                                    {DESCRIPTIONS[display.code] ?? "—"}
+                                    {display.feels !== undefined && <span className="text-white/50"> · sensación {Math.round(display.feels)}°</span>}
                                 </div>
                             </div>
                         </div>
-
-                        {/* Controls Section */}
-                        <div className="space-y-6">
-                            {/* Day Selector */}
-                            <div>
-                                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 ml-1">Días</h3>
-                                <div className="flex overflow-x-auto pb-4 gap-3 no-scrollbar snap-x">
-                                    {weatherData.daily.time.map((time, index) => {
-                                        const isSelected = selectedDayIndex === index;
-                                        return (
-                                            <button
-                                                key={time}
-                                                onClick={() => {
-                                                    setSelectedDayIndex(index);
-                                                    setSelectedHour(null); // Reset hour when day changes
-                                                }}
-                                                className={`flex-shrink-0 snap-start flex flex-col items-center p-3 rounded-2xl border min-w-[90px] transition-all duration-200 ${isSelected
-                                                    ? 'border-[#1CA9C9] bg-[#1CA9C9] text-white shadow-md transform scale-105'
-                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-[#1CA9C9]/50 hover:bg-gray-50'
-                                                    }`}
-                                            >
-                                                <span className={`text-xs font-medium mb-1 ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
-                                                    {new Date(time).toLocaleDateString('es-ES', { weekday: 'short' })}
-                                                </span>
-                                                <span className="text-xl font-bold">
-                                                    {new Date(time).getDate()}
-                                                </span>
-                                                <span className="text-2xl mt-1">
-                                                    {getWeatherIcon(weatherData.daily.weather_code[index])}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Hourly Selector */}
-                            <div>
-                                <div className="flex justify-between items-center mb-3 ml-1">
-                                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                                        Por horas ({new Date(weatherData.daily.time[selectedDayIndex]).toLocaleDateString('es-ES', { weekday: 'long' })})
-                                    </h3>
-                                    {selectedHour && (
-                                        <button
-                                            onClick={() => setSelectedHour(null)}
-                                            className="text-xs text-[#1CA9C9] font-bold hover:underline"
-                                        >
-                                            Ver resumen
-                                        </button>
-                                    )}
-                                </div>
-
-                                <div className="flex overflow-x-auto pb-4 gap-3 no-scrollbar snap-x">
-                                    {weatherData.hourly.time.map((time, index) => {
-                                        const date = new Date(time);
-                                        const selectedDate = new Date(weatherData.daily.time[selectedDayIndex]);
-
-                                        // Filter for selected day
-                                        if (date.getDate() !== selectedDate.getDate() ||
-                                            date.getMonth() !== selectedDate.getMonth()) {
-                                            return null;
-                                        }
-
-                                        const isSelected = selectedHour === time;
-                                        const isNow = selectedDayIndex === 0 && Math.abs(new Date() - date) < 3600000; // Highlight current hour roughly
-
-                                        return (
-                                            <button
-                                                key={time}
-                                                onClick={() => setSelectedHour(time)}
-                                                className={`flex-shrink-0 snap-start flex flex-col items-center p-3 rounded-xl border min-w-[80px] transition-all ${isSelected
-                                                    ? 'border-[#1CA9C9] bg-[#1CA9C9]/10 ring-2 ring-[#1CA9C9]'
-                                                    : isNow
-                                                        ? 'border-gray-300 bg-gray-100'
-                                                        : 'border-gray-100 bg-white hover:border-gray-300'
-                                                    }`}
-                                            >
-                                                <span className="text-xs font-medium text-gray-500 mb-1">
-                                                    {formatTime(time)}
-                                                </span>
-                                                <span className="text-xl mb-1">
-                                                    {getWeatherIcon(weatherData.hourly.weather_code[index])}
-                                                </span>
-                                                <span className="text-sm font-bold text-gray-900">
-                                                    {Math.round(weatherData.hourly.temperature_2m[index])}°
-                                                </span>
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    <svg
-                                                        className="w-3 h-3 text-gray-400"
-                                                        fill="currentColor"
-                                                        viewBox="0 0 20 20"
-                                                        style={{ transform: `rotate(${weatherData.hourly.wind_direction_10m[index]}deg)` }}
-                                                    >
-                                                        <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                                    </svg>
-                                                    <span className="text-[10px] text-gray-500">{weatherData.hourly.wind_speed_10m[index]}</span>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                        <div className={`rounded-3xl ring-1 backdrop-blur p-5 sm:p-6 md:w-72 ${TONES[v.tone]}`}>
+                            <div className="text-[11px] font-bold uppercase tracking-wider opacity-70">Para jugar</div>
+                            <div className="text-2xl font-black mt-1">{v.label}</div>
+                            <div className="text-sm mt-1 opacity-80">{v.text}</div>
                         </div>
                     </div>
                 )}
+            </PageHero>
+
+            <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+                {error ? (
+                    <EmptyState icon="cloud" title="No se pudo cargar la previsión">Inténtalo de nuevo en unos minutos.</EmptyState>
+                ) : !data ? (
+                    <Spinner label="Consultando el tiempo…" />
+                ) : (
+                    <div className="space-y-10">
+                        {/* Métricas */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                            <Metric
+                                icon="wind"
+                                label="Viento"
+                                value={Math.round(display.wind)}
+                                unit="km/h"
+                                sub={display.dir !== null ? `Del ${windDir(display.dir)}` : "Máximo del día"}
+                            >
+                                {display.dir !== null && <WindArrow deg={display.dir} className="w-6 h-6 text-[#1CA9C9] mb-1.5 ml-1" />}
+                            </Metric>
+                            <Metric icon="sun" label="Índice UV" value={Math.round(display.uv ?? 0)} sub={`${uvLevel(display.uv ?? 0).label}${(display.uv ?? 0) >= 6 ? " · ¡crema!" : ""}`} subCls={uvLevel(display.uv ?? 0).cls} />
+                            <Metric icon="clock" label="Sol" value={sun.set} sub={sunLeft || `Amanece a las ${sun.rise}`} />
+                            <Metric
+                                icon="cloud"
+                                label={display.humidity !== undefined ? "Humedad" : "Lluvia"}
+                                value={display.humidity !== undefined ? display.humidity : Math.round((data.daily.precipitation_sum[day] ?? 0) * 10) / 10}
+                                unit={display.humidity !== undefined ? "%" : "mm"}
+                                sub={display.humidity !== undefined ? `Lluvia hoy: ${data.daily.precipitation_sum[0] ?? 0} mm` : "Acumulado del día"}
+                            />
+                        </div>
+
+                        {/* Días */}
+                        <section>
+                            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Próximos días</h2>
+                            <div className="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pb-1">
+                                {data.daily.time.map((t, i) => {
+                                    const active = day === i;
+                                    return (
+                                        <button
+                                            key={t}
+                                            onClick={() => { setDay(i); setHour(null); }}
+                                            className={`shrink-0 w-[88px] rounded-2xl p-3 text-center border transition-all ${active ? "bg-[#0D5C6E] border-[#0D5C6E] text-white shadow-lg" : "bg-white border-black/5 hover:border-[#1CA9C9]/50"}`}
+                                        >
+                                            <div className={`text-xs font-bold uppercase ${active ? "text-white/70" : "text-gray-400"}`}>
+                                                {i === 0 ? "Hoy" : dayLabel(t, { weekday: "short" })}
+                                            </div>
+                                            <div className="text-3xl my-1">{weatherIcon(data.daily.weather_code[i])}</div>
+                                            <div className="text-sm font-black tabular-nums">
+                                                {Math.round(data.daily.temperature_2m_max[i])}°
+                                                <span className={`font-semibold ml-1 ${active ? "text-white/60" : "text-gray-400"}`}>{Math.round(data.daily.temperature_2m_min[i])}°</span>
+                                            </div>
+                                            <div className={`mt-1 text-[11px] font-semibold flex items-center justify-center gap-1 ${active ? "text-white/70" : "text-gray-500"}`}>
+                                                <Icon name="wind" className="w-3 h-3" /> {Math.round(data.daily.wind_speed_10m_max[i])}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
+                        {/* Horas */}
+                        <section>
+                            <div className="flex items-center justify-between mb-3">
+                                <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400">
+                                    Por horas · <span className="capitalize">{dayLabel(data.daily.time[day], { weekday: "long" })}</span>
+                                </h2>
+                                {hour !== null && (
+                                    <button onClick={() => setHour(null)} className="text-sm font-bold text-[#0D5C6E] hover:underline">Ver resumen</button>
+                                )}
+                            </div>
+                            <div className="bg-white rounded-3xl border border-black/5 shadow-sm p-3 sm:p-4">
+                                <div className="flex gap-1 overflow-x-auto no-scrollbar">
+                                    {hours.map(({ t, i }) => {
+                                        const h = data.hourly;
+                                        const active = hour === i;
+                                        const w = h.wind_speed_10m[i];
+                                        const wTone = w >= 30 ? "bg-rose-400" : w >= 18 ? "bg-amber-400" : "bg-emerald-400";
+                                        return (
+                                            <button
+                                                key={t}
+                                                onClick={() => setHour(i)}
+                                                className={`shrink-0 w-16 rounded-2xl py-3 flex flex-col items-center transition-colors ${active ? "bg-[#1CA9C9]/15 ring-2 ring-[#1CA9C9]" : "hover:bg-gray-50"}`}
+                                            >
+                                                <span className="text-xs font-bold text-gray-500">{hhmm(t)}</span>
+                                                <span className="text-2xl my-1">{weatherIcon(h.weather_code[i], h.is_day[i])}</span>
+                                                <span className="text-sm font-black tabular-nums">{Math.round(h.temperature_2m[i])}°</span>
+                                                <span className="mt-2 h-10 w-2 rounded-full bg-gray-100 flex items-end overflow-hidden" title={`${w} km/h`}>
+                                                    <span className={`w-full rounded-full ${wTone}`} style={{ height: `${Math.min(100, (w / maxWind) * 100)}%` }} />
+                                                </span>
+                                                <span className="mt-1 text-[10px] font-semibold text-gray-500 flex items-center gap-0.5">
+                                                    <WindArrow deg={h.wind_direction_10m[i]} className="w-2.5 h-2.5" /> {Math.round(w)}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-4 text-[11px] text-gray-500 px-1">
+                                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Ideal (&lt;18 km/h)</span>
+                                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" /> Jugable</span>
+                                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-400" /> Mucho viento (≥30)</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <p className="text-center text-xs text-gray-500">
+                            Datos: <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-[#0D5C6E] hover:underline">Open‑Meteo</a>
+                        </p>
+                    </div>
+                )}
             </main>
-        </div>
+        </PageShell>
     );
 }

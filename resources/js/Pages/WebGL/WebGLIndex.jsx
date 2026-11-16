@@ -1,63 +1,47 @@
 import React from "react";
-import { Head, Link } from "@inertiajs/react";
-import Navbar from "@/Components/Navbar";
+import { Link } from "@inertiajs/react";
+import { PageShell, PageHero, Icon } from "@/Components/ui";
+
+const EXPERIENCES = [
+    {
+        title: "Torneo en la playa",
+        description: "8 canchas de vóley playa con partidos simultáneos, jugadores animados y un entorno realista con mar y arena.",
+        href: "/webgl/exp6",
+    },
+];
 
 export default function WebGLIndex() {
-    const experiences = [
-        {
-            title: "Torneo Playa",
-            description: "8 canchas de vóley playa con partidos simultáneos, jugadores animados y un entorno realista con mar y arena.",
-            href: "/webgl/exp6",
-            color: "bg-gradient-to-br from-teal-400 to-cyan-600",
-        },
-    ];
-
     return (
-        <>
-            <Head title="Experiencias 3D - Las Canteras Vóley" />
-            <div className="min-h-screen bg-gray-50 font-sans">
-                <Navbar />
-                <div className="pt-24 max-w-7xl mx-auto px-6 pb-12">
-                    <div className="text-center mb-12">
-                        <h1 className="text-5xl font-extrabold text-[#1CA9C9] mb-4">
-                            Experiencias WebGL
-                        </h1>
-                        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                            Explora el vóley playa desde una nueva perspectiva con nuestras demos interactivas en 3D.
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {experiences.map((exp, idx) => (
-                            <Link
-                                key={idx}
-                                href={exp.href}
-                                className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-                            >
-                                <div className={`h-48 ${exp.color} flex items-center justify-center`}>
-                                    <span className="text-6xl text-white opacity-50 font-bold">
-                                        {idx + 1}
-                                    </span>
-                                </div>
-                                <div className="p-8">
-                                    <h3 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-[#1CA9C9] transition-colors">
-                                        {exp.title}
-                                    </h3>
-                                    <p className="text-gray-600 leading-relaxed">
-                                        {exp.description}
-                                    </p>
-                                    <div className="mt-6 font-semibold text-[#1CA9C9] flex items-center gap-2">
-                                        Ver Experiencia
-                                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
+        <PageShell title="Experiencias 3D - Las Canteras Beach Volley">
+            <PageHero
+                compact
+                eyebrow="Laboratorio"
+                title="Experiencias 3D"
+                subtitle="Explora el vóley playa desde otra perspectiva con nuestras demos interactivas en WebGL."
+            />
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {EXPERIENCES.map((exp, i) => (
+                        <Link
+                            key={exp.href}
+                            href={exp.href}
+                            className="group bg-white rounded-3xl border border-black/5 shadow-sm hover:shadow-xl overflow-hidden transition-all hover:-translate-y-1"
+                        >
+                            <div className="relative h-48 bg-gradient-to-br from-[#1CA9C9] via-[#127F98] to-[#0B3F4C] flex items-center justify-center overflow-hidden">
+                                <Icon name="cube" className="w-20 h-20 text-white/30 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500" strokeWidth={1.25} />
+                                <span className="absolute top-4 left-4 badge bg-white/15 text-white">Demo {i + 1}</span>
+                            </div>
+                            <div className="p-6">
+                                <h3 className="text-xl font-black group-hover:text-[#0D5C6E]">{exp.title}</h3>
+                                <p className="mt-2 text-gray-600 leading-relaxed">{exp.description}</p>
+                                <span className="mt-5 inline-flex items-center gap-1.5 font-bold text-[#0D5C6E]">
+                                    Abrir experiencia <Icon name="arrowRight" className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                </span>
+                            </div>
+                        </Link>
+                    ))}
                 </div>
-            </div>
-        </>
+            </main>
+        </PageShell>
     );
 }

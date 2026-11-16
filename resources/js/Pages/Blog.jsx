@@ -1,185 +1,148 @@
 import React from "react";
-import { Head, Link, router } from "@inertiajs/react";
-import Navbar from "@/Components/Navbar";
+import { Link, router } from "@inertiajs/react";
 import AdUnit from "@/Components/AdUnit";
+import { PageShell, PageHero, Segmented, Icon, EmptyState } from "@/Components/ui";
 
-// Helper function to strip HTML tags for preview
 const stripHtml = (html) => {
-    if (!html) return '';
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || '';
+    if (!html || typeof window === "undefined") return "";
+    return new DOMParser().parseFromString(html, "text/html").body.textContent || "";
 };
 
+export const POST_TYPES = {
+    noticia: { label: "Noticia", icon: "news", cls: "bg-sky-100 text-sky-800" },
+    evento: { label: "Evento", icon: "calendar", cls: "bg-violet-100 text-violet-800" },
+    torneo: { label: "Torneo", icon: "trophy", cls: "bg-amber-100 text-amber-800" },
+};
+
+const fmtDate = (d) => new Date(d).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+
+function TypeBadge({ type }) {
+    const t = POST_TYPES[type];
+    if (!t) return null;
+    return (
+        <span className={`badge ${t.cls}`}>
+            <Icon name={t.icon} className="w-3 h-3" /> {t.label}
+        </span>
+    );
+}
+
+function Cover({ post, className = "" }) {
+    return (
+        <div className={`relative overflow-hidden bg-gradient-to-br from-[#1CA9C9] to-[#0D5C6E] ${className}`}>
+            {post.image_path ? (
+                <img src={`/storage/${post.image_path}`} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = "none")} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            ) : (
+                <img src="/logo-nobg.png" alt="" className="absolute inset-0 m-auto w-20 h-20 opacity-40" />
+            )}
+        </div>
+    );
+}
+
+function FeaturedPost({ post }) {
+    return (
+        <Link href={`/blog/${post.slug}`} className="group grid lg:grid-cols-2 bg-white rounded-[2rem] overflow-hidden border border-black/5 shadow-sm hover:shadow-xl transition-all duration-300 mb-8">
+            <Cover post={post} className="aspect-[16/10] lg:aspect-auto lg:min-h-[340px]" />
+            <div className="p-7 sm:p-10 flex flex-col justify-center">
+                <div className="flex items-center gap-3 mb-4">
+                    <TypeBadge type={post.post_type} />
+                    <time className="text-sm text-gray-500">{fmtDate(post.created_at)}</time>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight group-hover:text-[#0D5C6E]">{post.title}</h2>
+                <p className="mt-4 text-gray-600 leading-relaxed line-clamp-3">{stripHtml(post.content)}</p>
+                <span className="mt-6 inline-flex items-center gap-1.5 font-bold text-[#0D5C6E]">
+                    Leer artículo <Icon name="arrowRight" className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </span>
+            </div>
+        </Link>
+    );
+}
+
+function PostCard({ post }) {
+    return (
+        <Link href={`/blog/${post.slug}`} className="group flex flex-col bg-white rounded-3xl overflow-hidden border border-black/5 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <Cover post={post} className="aspect-[16/10]" />
+            <div className="p-6 flex-1 flex flex-col">
+                <div className="flex items-center gap-2.5 mb-3">
+                    <TypeBadge type={post.post_type} />
+                    <time className="text-xs text-gray-500">{fmtDate(post.created_at)}</time>
+                </div>
+                <h3 className="text-lg font-extrabold leading-snug line-clamp-2 group-hover:text-[#0D5C6E]">{post.title}</h3>
+                <div className="flex-1"><p className="mt-2 text-sm text-gray-500 line-clamp-3">{stripHtml(post.content)}</p></div>
+                <span className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-[#0D5C6E]">
+                    Leer más <Icon name="arrow" className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                </span>
+            </div>
+        </Link>
+    );
+}
+
 export default function Blog({ posts, filters, adSettings }) {
+    const current = filters?.type || "all";
+    const list = Array.isArray(posts) ? posts : [];
+    const [featured, ...rest] = list;
 
+    const setFilter = (type) =>
+        router.get(route("blog"), type === "all" ? {} : { type }, { preserveState: true, preserveScroll: true });
 
-    const currentFilter = filters?.type || 'all';
-
-    const handleFilter = (type) => {
-        if (type === 'all') {
-            router.get(route('blog'));
-        } else {
-            router.get(route('blog'), { type }, { preserveState: true });
-        }
-    };
-
-    const getIcon = (type) => {
-        switch (type) {
-            case 'noticia':
-                return (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                    </svg>
-                );
-            case 'evento':
-                return (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                );
-            case 'torneo':
-                return (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                );
-            default:
-                return null;
-        }
-    };
-
-    const showAds = adSettings?.show_ads === '1';
+    const showAds = adSettings?.show_ads === "1";
     const adFrequency = adSettings?.ad_frequency || 3;
 
     return (
-        <>
+        <PageShell title="Blog - Las Canteras Beach Volley">
+            <PageHero
+                compact
+                eyebrow="Blog"
+                title="Noticias y eventos"
+                subtitle="Lo último de la comunidad: crónicas, torneos, eventos y consejos para la arena."
+            />
 
-            <Head title="Blog - Las Canteras Vóley" />
-            <div className="min-h-screen bg-[#FFF8E8] text-gray-900 font-sans">
-                <Navbar />
-                <div className="pt-24 max-w-6xl mx-auto px-6">
-                    <h1 className="text-4xl font-extrabold text-[#1CA9C9] mb-6">Blog y Noticias</h1>
-                    <p className="text-lg text-gray-700 mb-8">
-                        Últimas noticias, consejos de entrenamiento y eventos de la comunidad.
-                    </p>
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+                <div className="mb-8">
+                    <Segmented
+                        value={current}
+                        onChange={setFilter}
+                        options={[
+                            { value: "all", label: "Todo" },
+                            { value: "noticia", label: "Noticias", icon: "news" },
+                            { value: "evento", label: "Eventos", icon: "calendar" },
+                            { value: "torneo", label: "Torneos", icon: "trophy" },
+                        ]}
+                    />
+                </div>
 
-                    {/* Filters */}
-                    <div className="flex flex-wrap gap-4 mb-12">
-                        <button
-                            onClick={() => handleFilter('all')}
-                            className={`px-4 py-2 rounded-full font-semibold transition-colors ${currentFilter === 'all'
-                                ? 'bg-[#1CA9C9] text-white'
-                                : 'bg-white text-gray-600 hover:bg-gray-100'
-                                }`}
-                        >
-                            Todos
-                        </button>
-                        <button
-                            onClick={() => handleFilter('noticia')}
-                            className={`px-4 py-2 rounded-full font-semibold transition-colors flex items-center gap-2 ${currentFilter === 'noticia'
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-white text-gray-600 hover:bg-blue-50'
-                                }`}
-                        >
-                            {getIcon('noticia')}
-                            Noticias
-                        </button>
-                        <button
-                            onClick={() => handleFilter('evento')}
-                            className={`px-4 py-2 rounded-full font-semibold transition-colors flex items-center gap-2 ${currentFilter === 'evento'
-                                ? 'bg-purple-500 text-white'
-                                : 'bg-white text-gray-600 hover:bg-purple-50'
-                                }`}
-                        >
-                            {getIcon('evento')}
-                            Eventos
-                        </button>
-                        <button
-                            onClick={() => handleFilter('torneo')}
-                            className={`px-4 py-2 rounded-full font-semibold transition-colors flex items-center gap-2 ${currentFilter === 'torneo'
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-white text-gray-600 hover:bg-orange-50'
-                                }`}
-                        >
-                            {getIcon('torneo')}
-                            Torneos
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {Array.isArray(posts) && posts.map((post, index) => (
-                            <React.Fragment key={post.id}>
-                                <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
-                                    {post.image_path && (
-                                        <div className="relative">
-                                            <img
-                                                src={`/storage/${post.image_path}`}
-                                                alt={post.title}
-                                                className="w-full h-48 object-cover"
-                                            />
-                                            <div className={`absolute top-4 right-4 p-2 rounded-full shadow-md ${post.post_type === 'noticia' ? 'bg-blue-100 text-blue-600' :
-                                                post.post_type === 'evento' ? 'bg-purple-100 text-purple-600' :
-                                                    'bg-orange-100 text-orange-600'
-                                                }`}>
-                                                {getIcon(post.post_type)}
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="p-6 flex-1 flex flex-col">
-                                        <div className="text-sm text-gray-500 mb-2">
-                                            {new Date(post.created_at).toLocaleDateString()}
-                                        </div>
-                                        <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                                            {post.title}
-                                        </h2>
-                                        <p className="text-gray-600 mb-4 line-clamp-3 flex-1">
-                                            {stripHtml(post.content)}
-                                        </p>
-                                        <Link
-                                            href={`/blog/${post.slug}`}
-                                            className="text-[#1CA9C9] font-semibold hover:text-[#158BA8] transition-colors mt-auto inline-flex items-center"
-                                        >
-                                            Leer más
-                                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </Link>
-                                    </div>
-                                </div>
-                                {/* Insert ad based on settings */}
-                                {showAds && (index + 1) % adFrequency === 0 && index < posts.length - 1 && (
-                                    <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
-                                        <div className="p-6 flex-1 flex flex-col items-center justify-center min-h-[200px]">
-                                            <div className="text-xs text-gray-400 mb-2">Publicidad</div>
+                {list.length === 0 ? (
+                    <EmptyState
+                        icon="news"
+                        title="No hay publicaciones"
+                        action={current !== "all" && (
+                            <button onClick={() => setFilter("all")} className="font-bold text-[#0D5C6E] hover:underline">Ver todas las publicaciones</button>
+                        )}
+                    >
+                        Todavía no hay nada publicado en esta categoría.
+                    </EmptyState>
+                ) : (
+                    <>
+                        <FeaturedPost post={featured} />
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {rest.map((post, index) => (
+                                <React.Fragment key={post.id}>
+                                    <PostCard post={post} />
+                                    {showAds && (index + 1) % adFrequency === 0 && index < rest.length - 1 && (
+                                        <div className="bg-white rounded-3xl border border-black/5 p-6 flex flex-col items-center justify-center min-h-[220px]">
+                                            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Publicidad</div>
                                             <AdUnit
                                                 format="rectangle"
-                                                slot={adSettings?.ad_slot || '8111656162'}
-                                                client={adSettings?.ad_client_id || 'ca-pub-4538032873726641'}
+                                                slot={adSettings?.ad_slot || "8111656162"}
+                                                client={adSettings?.ad_client_id || "ca-pub-4538032873726641"}
                                             />
                                         </div>
-                                    </div>
-                                )}
-                            </React.Fragment>
-                        ))}
-                    </div>
-
-                    {(!Array.isArray(posts) || posts.length === 0) && (
-                        <div className="text-center py-12">
-                            <div className="text-6xl mb-4">🏐</div>
-                            <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay publicaciones</h3>
-                            <p className="text-gray-500">
-                                No se encontraron publicaciones para este filtro.
-                            </p>
-                            <button
-                                onClick={() => handleFilter('all')}
-                                className="mt-4 text-[#1CA9C9] hover:underline"
-                            >
-                                Ver todas las publicaciones
-                            </button>
+                                    )}
+                                </React.Fragment>
+                            ))}
                         </div>
-                    )}
-                </div>
-            </div>
-        </>
+                    </>
+                )}
+            </main>
+        </PageShell>
     );
 }

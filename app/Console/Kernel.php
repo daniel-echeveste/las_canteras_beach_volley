@@ -12,7 +12,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Liga 2ª División: una sola sincronización semanal con la API de
+        // Leverade, los lunes a las 02:00 (hora canaria).
+        $schedule->command('league:sync')
+            ->weeklyOn(1, '02:00')
+            ->timezone(config('league.timezone'))
+            ->withoutOverlapping();
     }
 
     /**
